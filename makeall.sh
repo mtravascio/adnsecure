@@ -4,7 +4,7 @@ cd ./rsakey2dart
 
 dart pub get
 
-#dart compile exe ./bin/rsakey2dart.dart
+dart compile exe ./bin/rsakey2dart.dart
 
 ./bin/rsakey2dart.exe
 
