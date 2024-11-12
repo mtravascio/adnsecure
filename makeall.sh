@@ -26,6 +26,7 @@ dart compile exe ./bin/securejoin2.dart
 
 ./bin/securejoin2.exe --wkey=WKCISTOTO30001
 
+cd ../
 
 
 
