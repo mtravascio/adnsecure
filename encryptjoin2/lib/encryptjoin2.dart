@@ -50,7 +50,12 @@ Uint8List decryptWithPrivateKey(
 String crittografaPassword(String password, RSAPublicKey chiavePubblica) {
   final encrypter =
       Encrypter(RSA(publicKey: chiavePubblica, encoding: RSAEncoding.PKCS1));
-  final encrypted = encrypter.encrypt(password);
+  var encrypted;
+  try {
+    encrypted = encrypter.encrypt(password);
+  } catch (e) {
+    print('Errore RSA Encription!');
+  }
   return encrypted.base64; // Ritorna il testo crittografato in Base64
 }
 
@@ -59,7 +64,12 @@ String decrittografaPassword(
     String encryptedPassword, RSAPrivateKey chiavePrivata) {
   final encrypter =
       Encrypter(RSA(privateKey: chiavePrivata, encoding: RSAEncoding.PKCS1));
-  final decrypted = encrypter.decrypt(Encrypted.from64(encryptedPassword));
+  String decrypted = '';
+  try {
+    decrypted = encrypter.decrypt(Encrypted.from64(encryptedPassword));
+  } catch (e) {
+    print('Errore RSA Decription!');
+  }
   return decrypted;
 }
 
@@ -72,8 +82,13 @@ String crittografaAES(String plainText, String chiave) {
   final iv = IV.fromUtf8('3AveMaria'.padRight(16)); // IV a 128-bit
 
   final encrypter = Encrypter(AES(key));
+  var encrypted;
+  try {
+    encrypted = encrypter.encrypt(plainText, iv: iv);
+  } catch (e) {
+    print('Errore AES Encryption!');
+  }
 
-  final encrypted = encrypter.encrypt(plainText, iv: iv);
 //final decrypted = encrypter.decrypt(encrypted, iv: iv);
 //  print(decrypted);
 //  print(encrypted.bytes);
@@ -92,8 +107,11 @@ String decrittografaAES(String encryptedText, String chiave) {
   final iv = IV.fromUtf8('3AveMaria'.padRight(16)); // IV a 128-bit
 
   final encrypter = Encrypter(AES(key));
-
-  final decrypted = encrypter.decrypt64(encryptedText, iv: iv);
-
+  String decrypted = '';
+  try {
+    decrypted = encrypter.decrypt64(encryptedText, iv: iv);
+  } catch (e) {
+    print('Errore AES Decryption!');
+  }
   return decrypted; // Ritorna il testo decrittografato
 }
