@@ -69,11 +69,11 @@ opzioni per 'psw':
       final passwordCrittografata =
           encryptjoin2.crittografaPassword(password, publicKey);
 
-      print('Password crittografata RSA: $passwordCrittografata');
+      print('Password crittata e salvata RSA: $passwordCrittografata\n');
 
       File('encrypted_rsa.txt').writeAsStringSync(passwordCrittografata);
     } catch (e) {
-      print('errore nella chiave pubblica! RSA\n');
+      print('Errore nella chiave di crittazione RSA!\n');
       exitCode = -1;
     }
   }
@@ -85,7 +85,7 @@ opzioni per 'psw':
       print('encrypted_rsa.txt non trovato!\n');
     }
     if (encryptedRSAPassword.isNotEmpty) {
-      print('Password crittografata RSA: $encryptedRSAPassword\n');
+      print('File Password RSA: $encryptedRSAPassword\n');
 
       // Crittografa il messaggio
       String testoCrittografato =
@@ -101,12 +101,11 @@ opzioni per 'psw':
       print('encrypted_password.txt non trovato!\n');
     }
     if (encryptedPassword.isNotEmpty) {
-      print("Testo Crittografato AES: $encryptedPassword\n");
-
+      print("File Crittato RSA+AES: $encryptedPassword\n");
       // Decritta con chiave AES
       String testoDecrittografato =
           encryptjoin2.decrittografaAES(encryptedPassword, chiaveSegreta);
-      print("Testo Decrittografato AES: $testoDecrittografato\n");
+      print("Testo Decrittato AES: $testoDecrittografato\n");
 
       var privateKey;
       try {
@@ -114,9 +113,9 @@ opzioni per 'psw':
         // Decrittografa la password
         final passwordDecrittografata = encryptjoin2.decrittografaPassword(
             testoDecrittografato, privateKey);
-        print('Password decrittografata RSA: $passwordDecrittografata');
+        print('Password decrittata RSA: $passwordDecrittografata');
       } catch (e) {
-        print('errore nella chiave privata RSA!');
+        print('errore nella chiave di decrittazione RSA!');
         exitCode = -1;
       }
     }
