@@ -1,12 +1,38 @@
 import 'package:rsakey2dart/rsakey2dart.dart' as rsakey2dart;
 import 'package:pointycastle/export.dart';
+import 'dart:io' show Platform;
 
-const ENCRYPTJOINPATH = '../encryptjoin/lib/';
-const SECUREJOINPATH = '../securejoin/lib/';
-const ENCRYPTJOIN2PATH = '../encryptjoin2/lib/';
-const SECUREJOIN2PATH = '../securejoin2/lib/';
+String ENCRYPTJOINPATH = '';
+String SECUREJOINPATH = '';
+String ENCRYPTJOIN2PATH = '';
+String SECUREJOIN2PATH = '';
 
 void main() {
+  // Get the operating system as a string.
+  String os = Platform.operatingSystem;
+  if (Platform.isLinux) {
+    print('is a Linux\n');
+    ENCRYPTJOINPATH = '../encryptjoin/lib/';
+    SECUREJOINPATH = '../securejoin/lib/';
+    ENCRYPTJOIN2PATH = '../encryptjoin2/lib/';
+    SECUREJOIN2PATH = '../securejoin2/lib/';
+  }
+  // Or, use a predicate getter.
+  if (Platform.isMacOS) {
+    print('is a Mac\n');
+    ENCRYPTJOINPATH = '../encryptjoin/lib/';
+    SECUREJOINPATH = '../securejoin/lib/';
+    ENCRYPTJOIN2PATH = '../encryptjoin2/lib/';
+    SECUREJOIN2PATH = '../securejoin2/lib/';
+  }
+  if (Platform.isWindows) {
+    print('is Windows\n');
+    ENCRYPTJOINPATH = '..\\encryptjoin\\lib\\';
+    SECUREJOINPATH = '..\\securejoin\\lib\\';
+    ENCRYPTJOIN2PATH = '..\\encryptjoin2\\lib\\';
+    SECUREJOIN2PATH = '..\\securejoin2\\lib\\';
+  }
+
   // Genera la coppia di chiavi RSA
   final keyPair = rsakey2dart.generateRSAKeyPair();
 
