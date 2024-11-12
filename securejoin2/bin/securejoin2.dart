@@ -20,7 +20,7 @@ int main(List<String> arguments) {
         print('''
 securejoin2.exe -h oppure securejoin2.exe help genera questo help.
 
-securejoin2.exe --wkey workstation + file 'encrypter_rsa.txt' effettua il join
+securejoin2.exe --wkey workstation + file 'encrypted_password.txt' effettua il join
 
 opzioni per 'wkey':
 --wkey=workstation
