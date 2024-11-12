@@ -1,12 +1,20 @@
 import 'package:securejoin2/securejoin2.dart' as securejoin2;
+import 'package:securejoin2/winapi.dart';
 import 'dart:io';
 import 'package:args/args.dart';
+import 'package:win32/win32.dart';
 
 const wkey = 'wkey';
 const help = 'help';
+const join = 'join';
+bool joindomain = false;
+const dn = 'usr.root.jus';
+const un = 'UTENTI\\massimo.travascio';
 
 int main(List<String> arguments) {
   int exitCode = 0;
+
+  if (Platform.isWindows) print('Computer Name: ${getComputerName()}\n');
 
   print('Argomenti: $arguments \n');
 
@@ -20,7 +28,7 @@ int main(List<String> arguments) {
         print('''
 securejoin2.exe -h oppure securejoin2.exe help genera questo help.
 
-securejoin2.exe --wkey workstation + file 'encrypted_password.txt' effettua il join
+securejoin2.exe --wkey workstation + file 'encrypted_password.txt' --join|--no-join
 
 opzioni per 'wkey':
 --wkey=workstation
@@ -32,13 +40,16 @@ opzioni per 'wkey':
     },
   );
   parser.addOption(wkey, mandatory: true, abbr: 'w');
+  parser.addFlag(join, abbr: 'j');
 
   String chiaveSegreta = '';
   String encryptedPassword = '';
   ArgResults results;
+
   try {
     results = parser.parse(arguments);
-    chiaveSegreta = results.option(wkey) ?? '';
+    chiaveSegreta = results.option(wkey) ?? getComputerName();
+    joindomain = results.flag(join);
   } catch (e) {
     print('parametro sconosciuto! securejoin2.exe -h per help\n');
     exitCode = -1;
@@ -67,6 +78,14 @@ opzioni per 'wkey':
 
         if (passwordDecrittografata.isNotEmpty) {
           print('Password Decrittata RSA: $passwordDecrittografata\n');
+
+          if (Platform.isWindows && joindomain) {
+            print('tenta il join\n');
+            Process.run('powershell', [
+              '-Command',
+              'Add-Computer -DomainName "$dn" -Credential (New-Object System.Management.Automation.PSCredential("$un",(ConvertTo-SecureString "$passwordDecrittografata" -AsPlainText -Force)))'
+            ]);
+          }
         } else {
           print('encrypted_password.txt errato!\n');
         }
