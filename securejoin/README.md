@@ -6,3 +6,5 @@ Successivamente la password viene decifrata con algoritmo AES e key che in quest
 ma bisognerà renderla parametro e tollerante alla diversificazione: attualmente se la chiave AES è sbagliata avviene un errore di decifrazione AES (try catch?).
 
 Qui bisognerà aggiungere l'esecuzione del processo di join in ADN con la password decifrata.
+
+prima della compilazione ricordarsi di fare:'dart pub get' per scaricare le librerie aggiornate!
