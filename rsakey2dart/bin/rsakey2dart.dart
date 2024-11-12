@@ -25,20 +25,22 @@ void main() {
       '../encryptjoin/lib/private_key.dart');
 */
   rsakey2dart.saveKeyToDartFile(
-      publicKeyBytes, 'publicKeyBytes', ENCRYPTJOINPATH + 'public_key.dart');
+      publicKeyBytes, 'publicKeyBytes', '${ENCRYPTJOINPATH}public_key.dart');
   rsakey2dart.saveKeyToDartFile(
-      privateKeyBytes, 'privateKeyBytes', ENCRYPTJOINPATH + 'private_key.dart');
+      privateKeyBytes, 'privateKeyBytes', '${ENCRYPTJOINPATH}private_key.dart');
   rsakey2dart.saveKeyToDartFile(
-      publicKeyBytes, 'publicKeyBytes', ENCRYPTJOIN2PATH + 'public_key.dart');
+      publicKeyBytes, 'publicKeyBytes', '${ENCRYPTJOIN2PATH}public_key.dart');
   rsakey2dart.saveKeyToDartFile(privateKeyBytes, 'privateKeyBytes',
-      ENCRYPTJOIN2PATH + 'private_key.dart');
+      '${ENCRYPTJOIN2PATH}private_key.dart');
 
 //SecureJoin dir
 /*  rsakey2dart.saveKeyToDartFile(
       privateKeyBytes, 'privateKeyBytes', '../securejoin/lib/private_key.dart');
 */
   rsakey2dart.saveKeyToDartFile(
-      privateKeyBytes, 'privateKeyBytes', SECUREJOINPATH + 'private_key.dart');
+      privateKeyBytes, 'privateKeyBytes', '${SECUREJOINPATH}private_key.dart');
+  rsakey2dart.saveKeyToDartFile(
+      privateKeyBytes, 'privateKeyBytes', '${SECUREJOIN2PATH}private_key.dart');
 
   print(
       'Chiavi generate e salvate nei file public_key.dart e private_key.dart.');
