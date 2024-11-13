@@ -6,6 +6,7 @@ String ENCRYPTJOINPATH = '';
 String SECUREJOINPATH = '';
 String ENCRYPTJOIN2PATH = '';
 String SECUREJOIN2PATH = '';
+String ENCRYPTSCRPATH = '';
 
 void main() {
   // Get the operating system as a string.
@@ -16,6 +17,7 @@ void main() {
     SECUREJOINPATH = '../securejoin/lib/';
     ENCRYPTJOIN2PATH = '../encryptjoin2/lib/';
     SECUREJOIN2PATH = '../securejoin2/lib/';
+    ENCRYPTSCRPATH = '../encryptscr/lib/';
   }
   // Or, use a predicate getter.
   if (Platform.isMacOS) {
@@ -24,6 +26,7 @@ void main() {
     SECUREJOINPATH = '../securejoin/lib/';
     ENCRYPTJOIN2PATH = '../encryptjoin2/lib/';
     SECUREJOIN2PATH = '../securejoin2/lib/';
+    ENCRYPTSCRPATH = '../encryptscr/lib/';
   }
   if (Platform.isWindows) {
     print('is Windows\n');
@@ -31,6 +34,7 @@ void main() {
     SECUREJOINPATH = '..\\securejoin\\lib\\';
     ENCRYPTJOIN2PATH = '..\\encryptjoin2\\lib\\';
     SECUREJOIN2PATH = '..\\securejoin2\\lib\\';
+    ENCRYPTSCRPATH = '..\\encryptscr\\lib\\';
   }
 
   // Genera la coppia di chiavi RSA
@@ -54,10 +58,16 @@ void main() {
       publicKeyBytes, 'publicKeyBytes', '${ENCRYPTJOINPATH}public_key.dart');
   rsakey2dart.saveKeyToDartFile(
       privateKeyBytes, 'privateKeyBytes', '${ENCRYPTJOINPATH}private_key.dart');
+
   rsakey2dart.saveKeyToDartFile(
       publicKeyBytes, 'publicKeyBytes', '${ENCRYPTJOIN2PATH}public_key.dart');
   rsakey2dart.saveKeyToDartFile(privateKeyBytes, 'privateKeyBytes',
       '${ENCRYPTJOIN2PATH}private_key.dart');
+
+  rsakey2dart.saveKeyToDartFile(
+      publicKeyBytes, 'publicKeyBytes', '${ENCRYPTSCRPATH}public_key.dart');
+  rsakey2dart.saveKeyToDartFile(
+      privateKeyBytes, 'privateKeyBytes', '${ENCRYPTSCRPATH}private_key.dart');
 
 //SecureJoin dir
 /*  rsakey2dart.saveKeyToDartFile(
