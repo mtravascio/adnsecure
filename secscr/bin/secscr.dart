@@ -27,7 +27,7 @@ void main(List<String> arguments) async {
         print('''
 secscr.exe -h oppure help genera questo help.
 
-secscr.exe [--wks|-w] workstation [--show|-x] | [--exec|-x] (file wks_scr.txt presente)
+secscr.exe [--wks|-w] workstation [--show|-s] | [--exec|-x] (file wks_scr.txt presente)
 ''');
       }
     },
