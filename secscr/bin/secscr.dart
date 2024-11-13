@@ -10,6 +10,7 @@ const show = 'show';
 const exec = 'exec';
 bool showscript = false;
 bool execscript = false;
+String workStation = '';
 
 void main(List<String> arguments) async {
   if (Platform.isWindows) print('Computer Name: ${getComputerName()}\n');
@@ -35,12 +36,11 @@ secscr.exe [--wks|-w] workstation [--show|-x] | [--exec|-x] (file wks_scr.txt pr
   parser.addFlag(show, negatable: false, abbr: 's');
   parser.addFlag(exec, negatable: false, abbr: 'x');
 
-  String chiaveSegreta = '';
   ArgResults results;
 
   try {
     results = parser.parse(arguments);
-    chiaveSegreta = results.option(wks) ?? getComputerName();
+    workStation = results.option(wks) ?? getComputerName();
     showscript = results.flag(show);
     execscript = results.flag(exec);
   } catch (e) {
@@ -50,16 +50,16 @@ secscr.exe [--wks|-w] workstation [--show|-x] | [--exec|-x] (file wks_scr.txt pr
 
   String encryptedScript = '';
   try {
-    encryptedScript = File('wks_scr.txt').readAsStringSync();
+    encryptedScript = File('$workStation.scr').readAsStringSync();
   } catch (e) {
-    print('wks_scr.txt non trovato!\n');
+    print('$workStation.scr non trovato!\n');
     exit(-1);
   }
   if (encryptedScript.isNotEmpty) {
     //print("File Crittato RSA+AES: $encryptedScript\n");
     // Decritta con chiave AES
     String scriptDecrittatoAES =
-        secscr.decrittografaAES(encryptedScript, chiaveSegreta);
+        secscr.decrittografaAES(encryptedScript, workStation);
     //print("Testo Decrittato AES: $scriptDecrittatoAES\n");
 
     //var privateKey;

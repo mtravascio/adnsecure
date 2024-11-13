@@ -1,12 +1,17 @@
 import 'package:encryptscr/encryptscr.dart' as encryptscr;
 import 'dart:io';
 import 'package:args/args.dart';
+import 'package:encryptscr/winapi.dart';
 
-const wks = 'wks';
-const uscript = 'scr';
-const test = 'test';
 const help = 'help';
-bool exec = false;
+const wks = 'wks';
+const inputFile = 'file';
+const encodedFile = 'enc';
+const show = 'show';
+const exec = 'exec';
+bool showscript = false;
+bool execscript = false;
+String workStation = '';
 
 void main(List<String> arguments) async {
   exitCode = 0;
@@ -21,60 +26,54 @@ void main(List<String> arguments) async {
     callback: (p0) {
       if (p0) {
         print('''
-encryptscr.exe -h oppure encrypscr.exe help genera questo help.
+encryptscr.exe [-h|--help] genera questo help.
 
-encryptscr.exe --scr script.ps1  -> genera 'encrypted_scr.txt'
+encryptscr.exe [--file|-f] 'script.ps1'|'script.sh'  -> 'script.enc'
 
-encryptscr.exe --wks workstation (+ file encrypted_scr.txt generato prima) -> genera 'wks_scr.txt'
- da utilizzarsi con secscr.exe
+encryptscr.exe [--wks|-w] workstation [-e|--enc] 'script.enc' ->  'workstation.scr'
+ da utilizzarsi con secscr.exe 
 
-encryptscr.exe --wks workstatoin --scr script.ps1 genera entrambi i file 
+encryptscr.exe [--wks|-w] workstation [-f|--file] 'script.ps1' -> 'script.enc' + 'workstation.scr' 
 
-flag -t o --test testa lo script in locale dopo il processo di crittazione e decrittazione
+flag [-s|--show] mostra lo script in locale dopo il processo di crittazione e decrittazione
 
-opzioni per 'wks':
---wks=workstation
---wks="workstation"
---wks workstation
--wworkstation
--w workstation
-
-opzioni per 'scr':
---scr=script.ps1
---scr script.ps1
--sscript.ps1
--s script.ps1
+flag [-x|--exec] esegue lo script in locale dopo il processo di crittazione e decrittazione
 ''');
       }
     },
   );
   parser.addOption(wks, mandatory: false, abbr: 'w');
-  parser.addOption(uscript, mandatory: true, abbr: 's');
-  parser.addFlag(test, negatable: false, abbr: 't');
+  parser.addOption(inputFile, mandatory: false, abbr: 'f');
+  parser.addOption(encodedFile, mandatory: true, abbr: 'e');
+  parser.addFlag(show, negatable: false, abbr: 's');
+  parser.addFlag(exec, negatable: false, abbr: 'x');
 
-  String scriptFn = '';
-  String chiaveSegreta = '';
+  String scriptFile = '';
+  String scriptEnc = '';
+  String scriptScr = '';
 
   ArgResults results;
   try {
     results = parser.parse(arguments);
-    scriptFn = results.option(uscript) ?? '';
-    chiaveSegreta = results.option(wks) ?? '';
-    exec = results.flag(test);
+    scriptFile = results.option(inputFile) ?? '';
+    scriptEnc = results.option(encodedFile) ?? '';
+    workStation = results.option(wks) ?? getComputerName();
+    showscript = results.flag(show);
+    execscript = results.flag(exec);
   } catch (e) {
-    print('parametro sconosciuto! encryptjoin2.exe -h per help\n');
+    print('parametro sconosciuto! [-h|--help] per help\n');
     exitCode = -1;
   }
 
-  if (scriptFn.isNotEmpty) {
+  if (scriptFile.isNotEmpty) {
     try {
       String userScript = '';
 
       //legge lo script
       try {
-        userScript = File(scriptFn).readAsStringSync();
+        userScript = File(scriptFile).readAsStringSync();
       } catch (e) {
-        print('Errore nel caricare $scriptFn\n');
+        print('Errore nel caricare $scriptFile\n');
       }
 
       // Carica la chiave pubblica
@@ -84,42 +83,60 @@ opzioni per 'scr':
       // Crittografa la password
       final userScriptRSA = encryptscr.crittografaRSA(userScript, publicKey);
 
-      print('Script crittato e salvato RSA: $userScriptRSA\n');
+      print('Script crittato e salvato: $userScriptRSA\n');
 
-      File('encrypted_scr.txt').writeAsStringSync(userScriptRSA);
+      File(scriptFile.replaceAll(RegExp(r'\.[^.]+$'), '.enc'))
+          .writeAsStringSync(userScriptRSA);
     } catch (e) {
-      print('Errore nella chiave di crittazione RSA!\n');
-      exitCode = -1;
+      print('Errore nella chiave di crittazione!\n');
+      exit(-1);
     }
   }
-  if (chiaveSegreta.isNotEmpty) {
-    String encryptedRSAscr = '';
-    try {
-      encryptedRSAscr = File('encrypted_scr.txt').readAsStringSync();
-    } catch (e) {
-      print('encrypted_scr.txt non trovato!\n');
-    }
-    if (encryptedRSAscr.isNotEmpty) {
-      print('File Password RSA: $encryptedRSAscr\n');
+  if (workStation.isNotEmpty &&
+      (scriptEnc.isNotEmpty || scriptFile.isNotEmpty)) {
+    String encryptedRSAenc = '';
 
-      // Crittografa il messaggio
+    if (scriptEnc.isNotEmpty) {
+      try {
+        encryptedRSAenc = File(scriptEnc).readAsStringSync();
+      } catch (e) {
+        print('$scriptEnc File non trovato!\n');
+        exit(-1);
+      }
+    }
+
+    if (scriptFile.isNotEmpty) {
+      try {
+        encryptedRSAenc =
+            File(scriptFile.replaceAll(RegExp(r'\.[^.]+$'), '.enc'))
+                .readAsStringSync();
+      } catch (e) {
+        print('$scriptFile Encoded non trovato!\n');
+        exit(-1);
+      }
+    }
+
+    if (encryptedRSAenc.isNotEmpty) {
+      print('Encoded Script:\n$encryptedRSAenc\n');
+
+      // Crittografa il AES los script
       String scriptCrittato =
-          encryptscr.crittografaAES(encryptedRSAscr, chiaveSegreta);
-      File('wks_scr.txt').writeAsStringSync(scriptCrittato);
+          encryptscr.crittografaAES(encryptedRSAenc, workStation);
+      File('$workStation.scr').writeAsStringSync(scriptCrittato);
     }
     //-------------Decrypt Test--------------//
     String encryptedScript = '';
     try {
-      encryptedScript = File('wks_scr.txt').readAsStringSync();
+      encryptedScript = File('$workStation.scr').readAsStringSync();
     } catch (e) {
-      print('wks_scr.txt non trovato!\n');
+      print('$workStation.scr non trovato!\n');
     }
     if (encryptedScript.isNotEmpty) {
-      print("File Crittato RSA+AES: $encryptedScript\n");
+      //print("File Crittato RSA+AES: $encryptedScript\n");
       // Decritta con chiave AES
       String scriptDecrittatoAES =
-          encryptscr.decrittografaAES(encryptedScript, chiaveSegreta);
-      print("Testo Decrittato AES: $scriptDecrittatoAES\n");
+          encryptscr.decrittografaAES(encryptedScript, workStation);
+      //print("Testo Decrittato AES: $scriptDecrittatoAES\n");
 
       //var privateKey;
       try {
@@ -128,8 +145,10 @@ opzioni per 'scr':
         final script =
             encryptscr.decrittografaRSA(scriptDecrittatoAES, privateKey);
 
-        print('Script decrittato:\n$script\n');
-        if (exec) {
+        if (showscript) {
+          print('Script decrittato:\n$script\n');
+        }
+        if (execscript) {
           if (Platform.isLinux) {
             var result = await Process.run('bash', ['-c', script]);
             print('Output:\n${result.stdout}\n');
@@ -143,12 +162,14 @@ opzioni per 'scr':
             print('Output:\n${result.stdout}\n');
             print('Error:\n${result.stderr}\n');
           }
+          print('OK!');
+          exit(0);
         }
       } catch (e) {
-        print('errore nella chiave di decrittazione RSA!\n');
-        exitCode = -1;
+        print('errore nella chiave di decrittazione!\n');
+        exit(-1);
       }
     }
   }
-  //return exitCode;
+//  print('Check!');
 }
