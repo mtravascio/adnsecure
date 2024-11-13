@@ -28,6 +28,23 @@ dart pub get
 dart compile exe .\bin\securejoin2.dart
 .\bin\securejoin2.exe --wkey=WKCISTOTO30001
 
-Copy-Item ".\bin\securejoin2.exe" -Destination "..\build\securejoin2.exe" -Force
+Copy-Item ".\bin\securejoin2.exe" -Destination "..\build\" -Force
+
+Set-Location "..\encryptscr\"
+dart pub get
+dart compile exe .\bin\encryptscr.dart
+.\bin\encryptscr.exe --wks=WKCISTOTO30001 --file=".\script.ps1" -s -x
+
+Copy-Item ".\bin\encryptscr.exe" -Destination "..\build\" -Force
+Copy-Item ".\script.enc" -Destination "..\build\" -Force
+Copy-Item ".\WKCISTOTO30001.scr" -Destination "..\build\" -Force
+Copy-Item ".\WKCISTOTO30001.scr" -Destination "..\secscr\" -Force
+
+Set-Location "..\secscr\"
+dart pub get
+dart compile exe .\bin\secscr.dart
+.\bin\secscr.exe --wks=WKCISTOTO30001 -s -x
+
+Copy-Item ".\bin\secscr.exe" -Destination "..\build\" -Force
 
 Set-Location "..\"
