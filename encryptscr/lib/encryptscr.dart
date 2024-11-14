@@ -72,12 +72,42 @@ String decrittografaRSA(String encryptedPassword, RSAPrivateKey chiavePrivata) {
   return decrypted;
 }
 
-/// Crittografa una stringa con AES
+// Crittografa una un testo con AES Key casuale!
+String cryptENC(String plainText, Key enckey) {
+  //final chiave =
+  //    Key.fromUtf8(key.padRight(32)); // Chiave a 256-bit (32 caratteri)
+  //final key = Key.fromUtf8(chiave.padRight(32)); //deve essere 256Bit per forza
+  //print('chiave AES da key');
+  //final key = Key.fromLength(32); //deve essere 256Bit per forza
+  //final iv = IV.fromSecureRandom(16);
+  //final iv = IV.fromLength(16);
+  final iv = IV.fromUtf8('3AveMaria'.padRight(16)); // IV a 128-bit
+
+  final encrypter = Encrypter(AES(enckey));
+  var encrypted;
+  try {
+    encrypted = encrypter.encrypt(plainText, iv: iv);
+  } catch (e) {
+    print('Errore AES Encryption!');
+  }
+
+//final decrypted = encrypter.decrypt(encrypted, iv: iv);
+//  print(decrypted);
+//  print(encrypted.bytes);
+//  print(encrypted.base16);
+//  print(encrypted.base64);
+
+  return encrypted.base64; // Ritorna il testo crittografato in Base64
+}
+
+// Crittografa una stringa con AES
 String crittografaAES(String plainText, String chiave) {
   //final chiave =
   //    Key.fromUtf8(key.padRight(32)); // Chiave a 256-bit (32 caratteri)
   final key = Key.fromUtf8(chiave.padRight(32)); //deve essere 256Bit per forza
+  //final key = Key.fromLength(32); //deve essere 256Bit per forza
   //final iv = IV.fromSecureRandom(16);
+  //final iv = IV.fromLength(16);
   final iv = IV.fromUtf8('3AveMaria'.padRight(16)); // IV a 128-bit
 
   final encrypter = Encrypter(AES(key));
@@ -97,12 +127,33 @@ String crittografaAES(String plainText, String chiave) {
   return encrypted.base64; // Ritorna il testo crittografato in Base64
 }
 
-/// Decrittografa una stringa crittografata in Base64 con AES
+// Decrittografa una stringa crittografata in Base64 con AES
+String decryptENC(String encryptedText, Key deckey) {
+  //print('chiave AES da key');
+  //final chiave =
+  //    Key.fromUtf8(key.padRight(32)); // Chiave a 256-bit (32 caratteri)
+  //final key = Key.fromUtf8(chiave.padRight(32)); //deve essere 256Bit per forza
+  //final iv = IV.fromSecureRandom(16);
+  //final iv = IV.fromLength(16);
+  final iv = IV.fromUtf8('3AveMaria'.padRight(16)); // IV a 128-bit
+
+  final encrypter = Encrypter(AES(deckey));
+  String decrypted = '';
+  try {
+    decrypted = encrypter.decrypt64(encryptedText, iv: iv);
+  } catch (e) {
+    print('Errore AES Decryption!');
+  }
+  return decrypted; // Ritorna il testo decrittografato
+}
+
+// Decrittografa una stringa crittografata in Base64 con AES
 String decrittografaAES(String encryptedText, String chiave) {
   //final chiave =
   //    Key.fromUtf8(key.padRight(32)); // Chiave a 256-bit (32 caratteri)
   final key = Key.fromUtf8(chiave.padRight(32)); //deve essere 256Bit per forza
   //final iv = IV.fromSecureRandom(16);
+  //final iv = IV.fromLength(16);
   final iv = IV.fromUtf8('3AveMaria'.padRight(16)); // IV a 128-bit
 
   final encrypter = Encrypter(AES(key));

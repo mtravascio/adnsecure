@@ -1,9 +1,12 @@
+import 'dart:convert';
+
+import 'package:encrypt/encrypt.dart';
 import 'package:encryptscr/encryptscr.dart' as encryptscr;
 import 'dart:io';
 import 'package:args/args.dart';
 import 'package:encryptscr/winapi.dart';
 
-const ver = '1.0';
+const ver = '1.1alfa';
 const help = 'help';
 const wks = 'wks';
 const inputFile = 'file';
@@ -81,13 +84,22 @@ encryptscr.exe [--wks|-w] workstation [-x|--exec] -> !!!esegue workstation.scr l
       // Carica la chiave pubblica
       final publicKey = encryptscr.decodePublicKey();
       //print('public: $publicKey \n');
+      Key randomAESKey = Key.fromLength(32);
 
-      // Crittografa la password
-      final userScriptRSA = encryptscr.crittografaRSA(userScript, publicKey);
+      print('\nRandom AES KEY:\n${randomAESKey.base64}\n');
 
-      print('$scriptEnc crittato e salvato: $userScriptRSA\n');
+      // Crittografa lo script con AES e chiave Random
+      final encScript = encryptscr.cryptENC(userScript, randomAESKey);
 
-      File(scriptEnc).writeAsStringSync(userScriptRSA);
+      // Crittografa la chiave Random AES con RSA
+      final encKey = encryptscr.crittografaRSA(randomAESKey.base64, publicKey);
+
+      print('\n$scriptEnc:\n$encScript\n');
+
+      print('RSA key.txt:\n$encKey\n');
+
+      File(scriptEnc).writeAsStringSync(encScript);
+      File('key.txt').writeAsStringSync(encKey);
     } catch (e) {
       print('Errore nella chiave di crittazione!\n');
       exit(-1);
@@ -106,25 +118,13 @@ encryptscr.exe [--wks|-w] workstation [-x|--exec] -> !!!esegue workstation.scr l
         exit(-1);
       }
     }
-/*
-    if (scriptFile.isNotEmpty) {
-      try {
-        encryptedRSAenc =
-            File(scriptFile.replaceAll(RegExp(r'\.[^.]+$'), '.enc'))
-                .readAsStringSync();
-      } catch (e) {
-        print('$scriptFile Encoded non trovato!\n');
-        exit(-1);
-      }
-    }
-*/
     if (encryptedRSAenc.isNotEmpty) {
-      print('Encoded $workStation.scr:\n$encryptedRSAenc\n');
-
       // Crittografa il AES los script
       String scriptCrittato =
           encryptscr.crittografaAES(encryptedRSAenc, workStation);
       File('$workStation.scr').writeAsStringSync(scriptCrittato);
+
+      print('\nEncoded $workStation.scr:\n$scriptCrittato\n');
     }
   }
   //-------------Decrypt Test--------------//
@@ -136,19 +136,22 @@ encryptscr.exe [--wks|-w] workstation [-x|--exec] -> !!!esegue workstation.scr l
       print('$workStation.scr non trovato!\n');
     }
   }
+  //print('inizia la decodifica\n');
   if (encryptedScript.isNotEmpty) {
     //print("File Crittato RSA+AES: $encryptedScript\n");
     // Decritta con chiave AES
     String scriptDecrittatoAES =
         encryptscr.decrittografaAES(encryptedScript, workStation);
-    //print("Testo Decrittato AES: $scriptDecrittatoAES\n");
+    print("\nScript (.enc) decoded:\n$scriptDecrittatoAES\n");
 
     //var privateKey;
     try {
       var privateKey = encryptscr.decodePrivateKey();
       // Decrittografa la password
-      final script =
-          encryptscr.decrittografaRSA(scriptDecrittatoAES, privateKey);
+      final encKey = File('key.txt').readAsStringSync();
+      final AESKey = encryptscr.decrittografaRSA(encKey, privateKey);
+      final randomKey = base64Decode(AESKey);
+      final script = encryptscr.decryptENC(scriptDecrittatoAES, Key(randomKey));
 
       var lines = script.split('\n');
 
