@@ -132,6 +132,7 @@ encryptscr.exe [--wks|-w] workstation [-x|--exec] -> !!!esegue workstation.scr l
   if (workStation.isNotEmpty) {
     try {
       encryptedScript = File('$workStation.scr').readAsStringSync();
+      print("\nRead $workStation.scr:\n$encryptedScript\n");
     } catch (e) {
       print('$workStation.scr non trovato!\n');
     }
@@ -142,7 +143,7 @@ encryptscr.exe [--wks|-w] workstation [-x|--exec] -> !!!esegue workstation.scr l
     // Decritta con chiave AES
     String scriptDecrittatoAES =
         encryptscr.decrittografaAES(encryptedScript, workStation);
-    print("\nScript (.enc) decoded:\n$scriptDecrittatoAES\n");
+    print("\nDecoded Script (.enc):\n$scriptDecrittatoAES\n");
 
     //var privateKey;
     try {
@@ -179,11 +180,11 @@ encryptscr.exe [--wks|-w] workstation [-x|--exec] -> !!!esegue workstation.scr l
       print('Script ($interpreter) Checked!\n');
 
       if (showscript) {
-        print('Script ($interpreter) decrittato:\n$script\n');
+        print('Show Script ($interpreter):\n$script\n');
       }
 
       if (execscript) {
-        print('Eseguo Script ($interpreter):\n');
+        print('Execute Script ($interpreter):\n');
         if (Platform.isLinux) {
           var result = await Process.run('bash', ['-c', script]);
           print('Output:\n${result.stdout}\n');
