@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:encryptscr/winapi.dart';
 
+const ver = '1.0';
 const help = 'help';
 const wks = 'wks';
 const inputFile = 'file';
@@ -16,7 +17,7 @@ String workStation = '';
 void main(List<String> arguments) async {
   exitCode = 0;
 
-  print('Argomenti: $arguments \n');
+  //print('Argomenti: $arguments \n');
 
   final parser = ArgParser();
   parser.addFlag(
@@ -26,18 +27,17 @@ void main(List<String> arguments) async {
     callback: (p0) {
       if (p0) {
         print('''
+* Script Encoder Cisia Torino v$ver *
+
 encryptscr.exe [-h|--help] genera questo help.
 
-encryptscr.exe [--file|-f] 'script.ps1'|'script.sh'  -> 'script.enc'
+encryptscr.exe [--file|-f] 'script.ps1'|'script.sh'|'script.py'  -> genera 'script.enc'
+encryptscr.exe [--wks|-w] workstation [-e|--enc] 'script.enc' -> genera 'workstation.scr' da usare con secscr.exe 
+encryptscr.exe [--wks|-w] workstation [-f|--file] 'script.ps1' -> genera 'script.enc' e 'workstation.scr' 
 
-encryptscr.exe [--wks|-w] workstation [-e|--enc] 'script.enc' ->  'workstation.scr'
- da utilizzarsi con secscr.exe 
-
-encryptscr.exe [--wks|-w] workstation [-f|--file] 'script.ps1' -> 'script.enc' + 'workstation.scr' 
-
-flag [-s|--show] mostra lo script in locale dopo il processo di crittazione e decrittazione
-
-flag [-x|--exec] esegue lo script in locale dopo il processo di crittazione e decrittazione
+encryptscr.exe [--wks|-w] workstation -> verifica 'workstation.scr'
+encryptscr.exe [--wks|-w] workstation [-s|--show] -> mostra workstation.scr descrittato 
+encryptscr.exe [--wks|-w] workstation [-x|--exec] -> !!!esegue workstation.scr locale!!!!
 ''');
       }
     },
@@ -50,7 +50,7 @@ flag [-x|--exec] esegue lo script in locale dopo il processo di crittazione e de
 
   String scriptFile = '';
   String scriptEnc = '';
-  String scriptScr = '';
+  String interpreter = '';
 
   ArgResults results;
   try {
@@ -61,13 +61,15 @@ flag [-x|--exec] esegue lo script in locale dopo il processo di crittazione e de
     showscript = results.flag(show);
     execscript = results.flag(exec);
   } catch (e) {
-    print('parametro sconosciuto! [-h|--help] per help\n');
+    print('encryptscr.exe [-h|--help] per help\n');
     exitCode = -1;
   }
 
   if (scriptFile.isNotEmpty) {
     try {
       String userScript = '';
+
+      scriptEnc = scriptFile.replaceAll(RegExp(r'\.[^.]+$'), '.enc');
 
       //legge lo script
       try {
@@ -83,17 +85,17 @@ flag [-x|--exec] esegue lo script in locale dopo il processo di crittazione e de
       // Crittografa la password
       final userScriptRSA = encryptscr.crittografaRSA(userScript, publicKey);
 
-      print('Script crittato e salvato: $userScriptRSA\n');
+      print('$scriptEnc crittato e salvato: $userScriptRSA\n');
 
-      File(scriptFile.replaceAll(RegExp(r'\.[^.]+$'), '.enc'))
-          .writeAsStringSync(userScriptRSA);
+      File(scriptEnc).writeAsStringSync(userScriptRSA);
     } catch (e) {
       print('Errore nella chiave di crittazione!\n');
       exit(-1);
     }
   }
   if (workStation.isNotEmpty &&
-      (scriptEnc.isNotEmpty || scriptFile.isNotEmpty)) {
+      //(scriptEnc.isNotEmpty || scriptFile.isNotEmpty)) {
+      scriptEnc.isNotEmpty) {
     String encryptedRSAenc = '';
 
     if (scriptEnc.isNotEmpty) {
@@ -104,7 +106,7 @@ flag [-x|--exec] esegue lo script in locale dopo il processo di crittazione e de
         exit(-1);
       }
     }
-
+/*
     if (scriptFile.isNotEmpty) {
       try {
         encryptedRSAenc =
@@ -115,60 +117,88 @@ flag [-x|--exec] esegue lo script in locale dopo il processo di crittazione e de
         exit(-1);
       }
     }
-
+*/
     if (encryptedRSAenc.isNotEmpty) {
-      print('Encoded Script:\n$encryptedRSAenc\n');
+      print('Encoded $workStation.scr:\n$encryptedRSAenc\n');
 
       // Crittografa il AES los script
       String scriptCrittato =
           encryptscr.crittografaAES(encryptedRSAenc, workStation);
       File('$workStation.scr').writeAsStringSync(scriptCrittato);
     }
-    //-------------Decrypt Test--------------//
-    String encryptedScript = '';
+  }
+  //-------------Decrypt Test--------------//
+  String encryptedScript = '';
+  if (workStation.isNotEmpty) {
     try {
       encryptedScript = File('$workStation.scr').readAsStringSync();
     } catch (e) {
       print('$workStation.scr non trovato!\n');
     }
-    if (encryptedScript.isNotEmpty) {
-      //print("File Crittato RSA+AES: $encryptedScript\n");
-      // Decritta con chiave AES
-      String scriptDecrittatoAES =
-          encryptscr.decrittografaAES(encryptedScript, workStation);
-      //print("Testo Decrittato AES: $scriptDecrittatoAES\n");
+  }
+  if (encryptedScript.isNotEmpty) {
+    //print("File Crittato RSA+AES: $encryptedScript\n");
+    // Decritta con chiave AES
+    String scriptDecrittatoAES =
+        encryptscr.decrittografaAES(encryptedScript, workStation);
+    //print("Testo Decrittato AES: $scriptDecrittatoAES\n");
 
-      //var privateKey;
-      try {
-        var privateKey = encryptscr.decodePrivateKey();
-        // Decrittografa la password
-        final script =
-            encryptscr.decrittografaRSA(scriptDecrittatoAES, privateKey);
+    //var privateKey;
+    try {
+      var privateKey = encryptscr.decodePrivateKey();
+      // Decrittografa la password
+      final script =
+          encryptscr.decrittografaRSA(scriptDecrittatoAES, privateKey);
 
-        if (showscript) {
-          print('Script decrittato:\n$script\n');
+      var lines = script.split('\n');
+
+      String shebang = lines.first;
+
+      if (shebang.startsWith('#!')) {
+        if (shebang.contains('bash')) {
+          interpreter = 'bash';
         }
-        if (execscript) {
-          if (Platform.isLinux) {
-            var result = await Process.run('bash', ['-c', script]);
-            print('Output:\n${result.stdout}\n');
-            print('Error:\n${result.stderr}\n');
-          }
-
+        if (shebang.contains('python3')) {
+          interpreter = 'python3';
+        }
+        if (shebang.contains('pwsh') || shebang.contains('powershell')) {
           if (Platform.isWindows) {
-            var result = await Process.run(
-                'powershell.exe', ['-Command', script],
-                runInShell: true);
-            print('Output:\n${result.stdout}\n');
-            print('Error:\n${result.stderr}\n');
+            interpreter = 'powershell.exe';
           }
-          print('OK!');
-          exit(0);
+          if (Platform.isLinux) {
+            interpreter = 'pwsh';
+          }
         }
-      } catch (e) {
-        print('errore nella chiave di decrittazione!\n');
-        exit(-1);
+      } else {
+        interpreter = 'unknown!';
       }
+
+      print('Script ($interpreter) Checked!\n');
+
+      if (showscript) {
+        print('Script ($interpreter) decrittato:\n$script\n');
+      }
+
+      if (execscript) {
+        print('Eseguo Script ($interpreter):\n');
+        if (Platform.isLinux) {
+          var result = await Process.run('bash', ['-c', script]);
+          print('Output:\n${result.stdout}\n');
+          print('Error:\n${result.stderr}\n');
+        }
+
+        if (Platform.isWindows) {
+          var result = await Process.run('powershell.exe', ['-Command', script],
+              runInShell: true);
+          print('Output:\n${result.stdout}\n');
+          print('Error:\n${result.stderr}\n');
+        }
+        print('OK!');
+        exit(0);
+      }
+    } catch (e) {
+      print('Errore di decrittazione!\n');
+      exit(-1);
     }
   }
 //  print('Check!');

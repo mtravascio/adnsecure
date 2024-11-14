@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:args/args.dart';
 //import 'package:win32/win32.dart';
 
+const ver = '1.0';
 const help = 'help';
 const wks = 'wks';
 const show = 'show';
@@ -11,6 +12,7 @@ const exec = 'exec';
 bool showscript = false;
 bool execscript = false;
 String workStation = '';
+String interpreter = '';
 
 void main(List<String> arguments) async {
   if (Platform.isWindows) print('Computer Name: ${getComputerName()}\n');
@@ -25,9 +27,11 @@ void main(List<String> arguments) async {
     callback: (p0) {
       if (p0) {
         print('''
-secscr.exe -h oppure help genera questo help.
+* Secure Script Cisia Torino v$ver' *
 
-secscr.exe [--wks|-w] workstation [--show|-s] | [--exec|-x] (file wks_scr.txt presente)
+secscr.exe [-h|--help] oppure help genera questo help.
+
+secscr.exe [--wks|-w] workstation [--show|-s] | [--exec|-x] (file workstation.scr presente)
 ''');
       }
     },
@@ -67,8 +71,37 @@ secscr.exe [--wks|-w] workstation [--show|-s] | [--exec|-x] (file wks_scr.txt pr
       var privateKey = secscr.decodePrivateKey();
       // Decrittografa la password
       final script = secscr.decrittografaRSA(scriptDecrittatoAES, privateKey);
-      if (showscript) print('Show script decrittato:\n$script\n');
+
+      var lines = script.split('\n');
+
+      String shebang = lines.first;
+
+      if (shebang.startsWith('#!')) {
+        if (shebang.contains('bash')) {
+          interpreter = 'bash';
+        }
+        if (shebang.contains('python3')) {
+          interpreter = 'python3';
+        }
+        if (shebang.contains('pwsh') || shebang.contains('powershell')) {
+          if (Platform.isWindows) {
+            interpreter = 'powershell.exe';
+          }
+          if (Platform.isLinux) {
+            interpreter = 'pwsh';
+          }
+        }
+      } else {
+        interpreter = 'unknown!';
+      }
+
+      print('Script ($interpreter) Checked!\n');
+
+      if (showscript) {
+        print('Script ($interpreter) decrittato:\n$script\n');
+      }
       if (execscript) {
+        print('Eseguo Script ($interpreter):\n');
         if (Platform.isLinux) {
           var result = await Process.run('bash', ['-c', script]);
           print('Output:\n${result.stdout}\n');
@@ -89,5 +122,5 @@ secscr.exe [--wks|-w] workstation [--show|-s] | [--exec|-x] (file wks_scr.txt pr
       exit(-1);
     }
   }
-  print('Check!');
+//  print('Check!');
 }
