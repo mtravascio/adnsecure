@@ -196,6 +196,13 @@ encryptscr.exe [--wks|-w] workstation [-x|--exec] -> !!!esegue workstation.scr l
           print('Output:\n${result.stdout}\n');
           print('Error:\n${result.stderr}\n');
         }
+
+        if (Platform.isMacOS) {
+          var result = await Process.run('bash', ['-c', script]);
+          print('Output:\n${result.stdout}\n');
+          print('Error:\n${result.stderr}\n');
+        }
+
         print('OK!');
         exit(0);
       }
