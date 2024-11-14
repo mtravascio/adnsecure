@@ -1,2 +1,4 @@
+#!powershell
+
 ipconfig 
 
