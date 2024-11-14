@@ -189,10 +189,11 @@ encryptscr.exe [--wks|-w] workstation [-x|--exec] -> !!!esegue workstation.scr l
           print('Output:\n${result.stdout}\n');
           print('Error:\n${result.stderr}\n');
         }
-
+        //runInShell: false perp poter visualizzare i messaggi di output e di errore!
+        //in secscr potrebbe essere true!
         if (Platform.isWindows) {
           var result = await Process.run('powershell.exe', ['-Command', script],
-              runInShell: true);
+              runInShell: false);
           print('Output:\n${result.stdout}\n');
           print('Error:\n${result.stderr}\n');
         }
