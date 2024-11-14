@@ -9,42 +9,42 @@ if (-not (Test-Path $buildir)) {
 
 Set-Location ".\rsakey2dart\"
 dart pub get
-dart compile exe .\bin\rsakey2dart.dart
-.\bin\rsakey2dart.exe
-#cp .\bin\rsakey2dart.exe  ..\build\rsakey2dart.exe
+dart compile exe .\bin\rsakey2dart.dart -o rsakey2dart.exe -S rsakey2dart.dbg
+.\rsakey2dart.exe
+#cp .\rsakey2dart.exe  ..\build\rsakey2dart.exe
 
 Set-Location "..\encryptjoin2"
 dart pub get
-dart compile exe .\bin\encryptjoin2.dart
-.\bin\encryptjoin2.exe --wkey=WKCISTOTO30001 --psw="UTENTI\massimo.travascio,Password01"
+dart compile exe .\bin\encryptjoin2.dart -o encryptjoin2.exe -S encryptjoin2.dbg
+.\encryptjoin2.exe --wkey=WKCISTOTO30001 --psw="UTENTI\massimo.travascio,Password01"
 
-Copy-Item ".\bin\encryptjoin2.exe" -Destination "..\build\" -Force
+Copy-Item ".\encryptjoin2.exe" -Destination "..\build\" -Force
 Copy-Item ".\encrypted_password.txt" -Destination "..\securejoin2\" -Force
 Copy-Item ".\encrypted_rsa.txt"	-Destination "..\build\" -Force
 Copy-Item ".\encrypted_password.txt" -Destination "..\build\" -Force
 
 Set-Location "..\securejoin2\"
 dart pub get
-dart compile exe .\bin\securejoin2.dart
-.\bin\securejoin2.exe --wkey=WKCISTOTO30001
+dart compile exe .\bin\securejoin2.dart -o securejoin2.exe -S securejoin2.dbg
+.\securejoin2.exe --wkey=WKCISTOTO30001
 
-Copy-Item ".\bin\securejoin2.exe" -Destination "..\build\" -Force
+Copy-Item ".\securejoin2.exe" -Destination "..\build\" -Force
 
 Set-Location "..\encryptscr\"
 dart pub get
-dart compile exe .\bin\encryptscr.dart
-.\bin\encryptscr.exe --wks=WKCISTOTO30001 --file=".\script.ps1" -s -x
+dart compile exe .\bin\encryptscr.dart -o encryptscr.exe -S encryptscr.dbg
+.\encryptscr.exe --wks=WKCISTOTO30001 --file=".\script.ps1" -s -x
 
-Copy-Item ".\bin\encryptscr.exe" -Destination "..\build\" -Force
+Copy-Item ".\encryptscr.exe" -Destination "..\build\" -Force
 Copy-Item ".\script.enc" -Destination "..\build\" -Force
 Copy-Item ".\WKCISTOTO30001.scr" -Destination "..\build\" -Force
 Copy-Item ".\WKCISTOTO30001.scr" -Destination "..\secscr\" -Force
 
 Set-Location "..\secscr\"
 dart pub get
-dart compile exe .\bin\secscr.dart
+dart compile exe .\bin\secscr.dart -o secscr.exe -S secscr.dbg
 .\bin\secscr.exe --wks=WKCISTOTO30001 -s -x
 
-Copy-Item ".\bin\secscr.exe" -Destination "..\build\" -Force
+Copy-Item ".\secscr.exe" -Destination "..\build\" -Force
 
 Set-Location "..\"
