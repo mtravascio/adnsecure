@@ -41,7 +41,7 @@ Massimo Travascio (massimo.travascio@giustizia.it)
 
 secscr.exe [-h|--help] oppure help genera questo help.
 
-secscr.exe [--f|--file] scriptname.scr [--show|-s] | [--exec|-x] [-u|--url] http://HOST:PORT/scriptname.scr
+secscr.exe [--f|--file] scriptname.scr [-u|--url] http://HOST:PORT/scriptname.scr [--exec|-x]
 ''');
         exit(0);
       }
@@ -49,8 +49,8 @@ secscr.exe [--f|--file] scriptname.scr [--show|-s] | [--exec|-x] [-u|--url] http
   );
   parser.addOption(fileopt, mandatory: false, abbr: 'f');
   parser.addOption(urlopt, mandatory: false, abbr: 'u');
-  parser.addFlag(show, negatable: false, abbr: 's');
   parser.addFlag(exec, negatable: false, abbr: 'x');
+  parser.addFlag(show, negatable: false);
   parser.addFlag(force, negatable: false);
 
   ArgResults results;
