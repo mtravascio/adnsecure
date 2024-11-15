@@ -1,21 +1,26 @@
+import 'dart:convert';
+
+import 'package:encrypt/encrypt.dart';
 import 'package:secscr/secscr.dart' as secscr;
 import 'package:secscr/winapi.dart';
 import 'dart:io';
 import 'package:args/args.dart';
-//import 'package:win32/win32.dart';
 
-const ver = '1.0';
+const ver = '1.2';
 const help = 'help';
-const wks = 'wks';
+const fileopt = 'file';
 const show = 'show';
 const exec = 'exec';
+const urlopt = 'url';
 bool showscript = false;
 bool execscript = false;
-String workStation = '';
+String fileSCR = '';
 String interpreter = '';
 
 void main(List<String> arguments) async {
   if (Platform.isWindows) print('Computer Name: ${getComputerName()}\n');
+
+  print('hostname: ${Platform.localHostname}');
 
   print('Argomenti: $arguments \n');
 
@@ -28,15 +33,18 @@ void main(List<String> arguments) async {
       if (p0) {
         print('''
 * Secure Script Cisia Torino v$ver' *
+Massimo Travascio (mtravasciocisia@gmail.com) 
+Cisia Torino - 2024
 
 secscr.exe [-h|--help] oppure help genera questo help.
 
-secscr.exe [--wks|-w] workstation [--show|-s] | [--exec|-x] (file workstation.scr presente)
+secscr.exe [--f|--file] workstation.scr [--show|-s] | [--exec|-x] [-u|--url] http://localdomain:8000/workstation.scr
 ''');
       }
     },
   );
-  parser.addOption(wks, mandatory: false, abbr: 'w');
+  parser.addOption(fileopt, mandatory: false, abbr: 'f');
+  parser.addOption(urlopt, mandatory: false, abbr: 'u');
   parser.addFlag(show, negatable: false, abbr: 's');
   parser.addFlag(exec, negatable: false, abbr: 'x');
 
@@ -44,7 +52,7 @@ secscr.exe [--wks|-w] workstation [--show|-s] | [--exec|-x] (file workstation.sc
 
   try {
     results = parser.parse(arguments);
-    workStation = results.option(wks) ?? getComputerName();
+    fileSCR = results.option(fileopt) ?? getComputerName();
     showscript = results.flag(show);
     execscript = results.flag(exec);
   } catch (e) {
@@ -54,23 +62,40 @@ secscr.exe [--wks|-w] workstation [--show|-s] | [--exec|-x] (file workstation.sc
 
   String encryptedScript = '';
   try {
-    encryptedScript = File('$workStation.scr').readAsStringSync();
+    encryptedScript = File('$fileSCR').readAsStringSync();
   } catch (e) {
-    print('$workStation.scr non trovato!\n');
+    print('$fileSCR non trovato!\n');
     exit(-1);
   }
+
+  String workStation = fileSCR.split('.').first;
+
   if (encryptedScript.isNotEmpty) {
     //print("File Crittato RSA+AES: $encryptedScript\n");
     // Decritta con chiave AES
     String scriptDecrittatoAES =
         secscr.decrittografaAES(encryptedScript, workStation);
-    //print("Testo Decrittato AES: $scriptDecrittatoAES\n");
+    print("Decoded Script: $scriptDecrittatoAES\n");
 
     //var privateKey;
     try {
       var privateKey = secscr.decodePrivateKey();
-      // Decrittografa la password
-      final script = secscr.decrittografaRSA(scriptDecrittatoAES, privateKey);
+
+      // Legge il file enc in formato json
+      //final data = File('script.enc').readAsStringSync();
+      //final decData = jsonDecode(data);
+
+      final decData = jsonDecode(scriptDecrittatoAES);
+
+      final encKey = decData['k'];
+      final encScript = decData['e'];
+      final scriptFile = decData['n'];
+
+      final AESKey = secscr.decrittografaRSA(encKey, privateKey);
+
+      final randomKey = base64Decode(AESKey);
+      //final script = encryptscr.decryptENC(scriptDecrittatoAES, Key(randomKey));
+      final script = secscr.decryptENC(encScript, Key(randomKey));
 
       var lines = script.split('\n');
 
@@ -95,7 +120,7 @@ secscr.exe [--wks|-w] workstation [--show|-s] | [--exec|-x] (file workstation.sc
         interpreter = 'unknown!';
       }
 
-      print('Script ($interpreter) Checked!\n');
+      print('Script ($interpreter) $scriptFile Checked!\n');
 
       if (showscript) {
         print('Script ($interpreter) decrittato:\n$script\n');
@@ -110,10 +135,17 @@ secscr.exe [--wks|-w] workstation [--show|-s] | [--exec|-x] (file workstation.sc
 
         if (Platform.isWindows) {
           var result = await Process.run('powershell.exe', ['-Command', script],
-              runInShell: true);
+              runInShell: false);
           print('Output:\n${result.stdout}\n');
           print('Error:\n${result.stderr}\n');
         }
+
+        if (Platform.isMacOS) {
+          var result = await Process.run('bash', ['-c', script]);
+          print('Output:\n${result.stdout}\n');
+          print('Error:\n${result.stderr}\n');
+        }
+
         print('OK!');
         exit(0);
       }
