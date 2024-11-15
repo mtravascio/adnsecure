@@ -1,21 +1,22 @@
 import 'dart:convert';
-
 import 'package:encrypt/encrypt.dart';
 import 'package:encryptscr/encryptscr.dart' as encryptscr;
 import 'dart:io';
 import 'package:args/args.dart';
-import 'package:encryptscr/winapi.dart';
+//import 'package:encryptscr/winapi.dart';
+import 'package:http/http.dart' as http;
 
-const ver = '1.2';
+const ver = '1.3';
 const help = 'help';
 const wks = 'wks';
 const inputFile = 'file';
-const url = 'url';
+const urlopt = 'url';
 const show = 'show';
 const exec = 'exec';
 bool showscript = false;
 bool execscript = false;
 String workStation = '';
+String urlSCR = '';
 
 void main(List<String> arguments) async {
   exitCode = 0;
@@ -38,6 +39,7 @@ encryptscr.exe [-h|--help] genera questo help.
 
 encryptscr.exe [--wks|-w] workstation [--file|-f] 'script.ps1'|'script.sh'|'script.py'  -> genera 'workstation.scr' da usare con secscr.exe 
 encryptscr.exe [--wks|-w] workstation -> verifica il file 'workstation.scr'
+encryptscr.exe [--url|-u] http://HOST:PORT/workstation -> verifica la presenza di 'workstation.scr' url remota
 encryptscr.exe [--wks|-w] workstation [-s|--show] -> mostra workstation.scr descrittato 
 encryptscr.exe [--wks|-w] workstation [-x|--exec] -> !!!esegue workstation.scr locale!!!!
 ''');
@@ -47,20 +49,19 @@ encryptscr.exe [--wks|-w] workstation [-x|--exec] -> !!!esegue workstation.scr l
   );
   parser.addOption(wks, mandatory: true, abbr: 'w');
   parser.addOption(inputFile, mandatory: false, abbr: 'f');
-  parser.addOption(url, mandatory: false, abbr: 'u');
+  parser.addOption(urlopt, mandatory: false, abbr: 'u');
   parser.addFlag(show, negatable: false, abbr: 's');
   parser.addFlag(exec, negatable: false, abbr: 'x');
 
   String scriptFile = '';
-  String urlFile = '';
   String interpreter = '';
 
   ArgResults results;
   try {
     results = parser.parse(arguments);
     scriptFile = results.option(inputFile) ?? '';
-    urlFile = results.option(url) ?? '';
-    workStation = results.option(wks) ?? getComputerName();
+    urlSCR = results.option(urlopt) ?? '';
+    workStation = results.option(wks) ?? '';
     showscript = results.flag(show);
     execscript = results.flag(exec);
   } catch (e) {
@@ -86,7 +87,7 @@ encryptscr.exe [--wks|-w] workstation [-x|--exec] -> !!!esegue workstation.scr l
       //print('public: $publicKey \n');
       Key randomAESKey = Key.fromLength(32);
 
-      print('\nRandom AES KEY:\n${randomAESKey.base64}\n');
+      //print('\nRandom AES KEY:\n${randomAESKey.base64}\n');
 
       // Crittografa lo script con AES e chiave Random
       final encScript = encryptscr.cryptENC(userScript, randomAESKey);
@@ -94,9 +95,9 @@ encryptscr.exe [--wks|-w] workstation [-x|--exec] -> !!!esegue workstation.scr l
       // Crittografa la chiave Random AES con RSA
       final encKey = encryptscr.crittografaRSA(randomAESKey.base64, publicKey);
 
-      print('\nEncoded $scriptFile:\n$encScript\n');
+      //print('\nEncoded $scriptFile:\n$encScript\n');
 
-      print('RSA key.txt:\n$encKey\n');
+      //print('RSA key.txt:\n$encKey\n');
 
       final data = jsonEncode({'n': scriptFile, 'e': encScript, 'k': encKey});
 
@@ -118,30 +119,51 @@ encryptscr.exe [--wks|-w] workstation [-x|--exec] -> !!!esegue workstation.scr l
       exit(-1);
     }
   }
-  if (workStation.isNotEmpty) {
-    String encryptedSCR = '';
-
-    try {
-      encryptedSCR = File('$workStation.scr').readAsStringSync();
-    } catch (e) {
-      print('File $workStation.scr non trovato!\n');
-      exit(-1);
-    }
-
-    if (encryptedSCR.isNotEmpty) {
-      // Verifica lo script AES
-      print('\nCheck $workStation.scr:\n');
-      final res = encryptscr.decrittografaAES(encryptedSCR, workStation);
-      if (res.isNotEmpty) {
-        print('OK!');
-      } else {
-        print('Error!');
+  String encryptedScript = '';
+  if (urlSCR.isEmpty) {
+    if (workStation.isNotEmpty) {
+      try {
+        encryptedScript = File('$workStation.scr').readAsStringSync();
+      } catch (e) {
+        print('File $workStation.scr non trovato!\n');
         exit(-1);
       }
     }
+  } else {
+    print('Download $urlSCR.scr\n');
+
+    workStation = Uri.parse(urlSCR).pathSegments.last;
+
+    final response;
+    try {
+      response = await http.get(Uri.parse('$urlSCR.scr'));
+    } catch (e) {
+      print("Errore di connessione!\n");
+      exit(-1);
+    }
+
+    if (response.statusCode != 200) {
+      print('Errore nel download: ${response.statusCode}');
+      print('$urlSCR.scr non trovato!\n');
+      exit(-1);
+    }
+    encryptedScript = response.body;
+
+    print('Downloaded $workStation.scr:\n$encryptedScript\n');
+  }
+  if (encryptedScript.isNotEmpty) {
+    // Verifica lo script AES
+    print('\nCheck $workStation.scr:\n');
+    final res = encryptscr.decrittografaAES(encryptedScript, workStation);
+    if (res.isNotEmpty) {
+      print('OK!');
+    } else {
+      print('Error!');
+      exit(-1);
+    }
   }
   //-------------Decrypt Test--------------//
-  String encryptedScript = '';
+  //String encryptedScript = '';
   if (workStation.isNotEmpty && (execscript || showscript)) {
     try {
       encryptedScript = File('$workStation.scr').readAsStringSync();
@@ -156,7 +178,7 @@ encryptscr.exe [--wks|-w] workstation [-x|--exec] -> !!!esegue workstation.scr l
     // Decritta il file json con chiave AES
     String scriptDecrittatoAES =
         encryptscr.decrittografaAES(encryptedScript, workStation);
-    print("\nDecoded Script:\n$scriptDecrittatoAES\n");
+    //print("\nDecoded Script:\n$scriptDecrittatoAES\n");
 
     //var privateKey;
     try {
