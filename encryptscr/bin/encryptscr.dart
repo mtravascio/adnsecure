@@ -101,7 +101,7 @@ encryptscr.exe [--wks|-w] workstation [-x|--exec] -> !!!esegue workstation.scr l
       final data = jsonEncode({'n': scriptFile, 'e': encScript, 'k': encKey});
 
       //scrive il file script.enc
-      File('data.enc').writeAsStringSync(data);
+      //File('data.enc').writeAsStringSync(data);
 
       //File(scriptEnc).writeAsStringSync(encScript);
       //File('key.txt').writeAsStringSync(encKey);
