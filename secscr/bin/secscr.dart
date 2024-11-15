@@ -12,8 +12,10 @@ const fileopt = 'file';
 const show = 'show';
 const exec = 'exec';
 const urlopt = 'url';
+const force = 'force';
 bool showscript = false;
 bool execscript = false;
+bool forcescript = false;
 String fileSCR = '';
 String urlSCR = '';
 String interpreter = '';
@@ -49,6 +51,7 @@ secscr.exe [--f|--file] scriptname.scr [--show|-s] | [--exec|-x] [-u|--url] http
   parser.addOption(urlopt, mandatory: false, abbr: 'u');
   parser.addFlag(show, negatable: false, abbr: 's');
   parser.addFlag(exec, negatable: false, abbr: 'x');
+  parser.addFlag(force, negatable: false);
 
   ArgResults results;
 
@@ -59,6 +62,7 @@ secscr.exe [--f|--file] scriptname.scr [--show|-s] | [--exec|-x] [-u|--url] http
 // 'http://localhost:8080/${Platform.localHostname}.scr';
     showscript = results.flag(show);
     execscript = results.flag(exec);
+    forcescript = results.flag(force);
   } catch (e) {
     print('parametro sconosciuto! [-h|--help] per help\n');
   }
@@ -93,7 +97,14 @@ secscr.exe [--f|--file] scriptname.scr [--show|-s] | [--exec|-x] [-u|--url] http
     print('Downloaded $fileSCR:\n$encryptedScript\n');
   }
 
-  String workStation = fileSCR.split('.').first;
+  String workStation = '';
+  //Qui per decodificare ed eseguire tutti gli script
+  if (forcescript) {
+    workStation = fileSCR.split('.').first;
+  } else {
+    //Qui ped decoficare solo gli script destinati allla Workstation locale;
+    workStation = Platform.localHostname;
+  }
 
   if (encryptedScript.isNotEmpty) {
     //print("File Crittato RSA+AES: $encryptedScript\n");
