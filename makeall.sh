@@ -27,7 +27,8 @@ cp ./WKCISTOTO30001.scr ../secscr/WKCISTOTO30001.scr
 cd ../secscr/
 dart pub get
 dart compile exe ./bin/secscr.dart -o secscr.exe -S /dev/null
-./secscr.exe --wks=WKCISTOTO30001 -s -x
+#./secscr.exe --wks=WKCISTOTO30001 -s -x
+./secscr.exe --file=WKCISTOTO30001.scr -s -x
 
 cd ../
 
