@@ -36,7 +36,6 @@ dart compile exe .\bin\encryptscr.dart -o encryptscr.exe -S encryptscr.dbg
 .\encryptscr.exe --wks=WKCISTOTO30001 --file=".\script.ps1" -s -x
 
 Copy-Item ".\encryptscr.exe" -Destination "..\build\" -Force
-Copy-Item ".\script.enc" -Destination "..\build\" -Force
 Copy-Item ".\WKCISTOTO30001.scr" -Destination "..\build\" -Force
 Copy-Item ".\WKCISTOTO30001.scr" -Destination "..\secscr\" -Force
 
