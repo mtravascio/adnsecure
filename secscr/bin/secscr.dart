@@ -6,7 +6,7 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:http/http.dart' as http;
 
-const ver = '1.2';
+const ver = '1.3';
 const help = 'help';
 const fileopt = 'file';
 //const show = 'show';
@@ -76,7 +76,7 @@ secscr.exe [--f|--file] scriptname.scr [-u|--url] http://HOST:PORT/scriptname.sc
     try {
       encryptedScript = File(fileSCR).readAsStringSync();
     } catch (e) {
-      print('$fileSCR non trovato!\n');
+      print('File $fileSCR non trovato!\n');
       exit(-1);
     }
     //scarica da url il file scr
