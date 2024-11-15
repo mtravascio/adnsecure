@@ -219,6 +219,9 @@ encryptscr.exe [--wks|-w] workstation [-x|--exec] -> !!!esegue workstation.scr l
           if (Platform.isLinux) {
             interpreter = 'pwsh';
           }
+          if (Platform.isMacOS) {
+            interpreter = 'pwsh';
+          }
         }
       } else {
         interpreter = 'unknown!';
