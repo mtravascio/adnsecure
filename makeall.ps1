@@ -43,7 +43,8 @@ Set-Location "..\secscr\"
 dart pub get
 dart compile exe .\bin\secscr.dart -o secscr.exe -S secscr.dbg
 #.\secscr.exe --wks=WKCISTOTO30001 -s -x
-.\secscr.exe --file=WKCISTOTO30001.scr -x --force --show
+#.\secscr.exe --file=WKCISTOTO30001.scr -x --force --show
+.\secscr.exe --file=WKCISTOTO30001.scr -x --force
 
 Copy-Item ".\secscr.exe" -Destination "..\build\" -Force
 
