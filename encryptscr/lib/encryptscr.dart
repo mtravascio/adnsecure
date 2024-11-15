@@ -57,7 +57,7 @@ String crittografaRSA(String password, RSAPublicKey chiavePubblica) {
   try {
     encrypted = encrypter.encrypt(password);
   } catch (e) {
-    print('Errore RSA Encription!');
+    //print('Errore RSA Encription!');
   }
   return encrypted.base64; // Ritorna il testo crittografato in Base64
 }
@@ -70,7 +70,7 @@ String decrittografaRSA(String encryptedPassword, RSAPrivateKey chiavePrivata) {
   try {
     decrypted = encrypter.decrypt(Encrypted.from64(encryptedPassword));
   } catch (e) {
-    print('Errore RSA Decription!');
+    //print('Errore RSA Decription!');
   }
   return decrypted;
 }
