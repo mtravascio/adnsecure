@@ -31,8 +31,8 @@ void main(List<String> arguments) async {
       if (p0) {
         print('''
 * Secure Script Encoder - v$ver *
-Massimo Travascio (mtravasciocisia@gmail.com) 
-Cisia Torino - 2024
+* Ministero della Giustizia - Cisia di Torino - 2024 *
+Massimo Travascio (massimo.travascio@giustizia.it) 
 
 encryptscr.exe [-h|--help] genera questo help.
 
@@ -41,6 +41,7 @@ encryptscr.exe [--wks|-w] workstation -> verifica il file 'workstation.scr'
 encryptscr.exe [--wks|-w] workstation [-s|--show] -> mostra workstation.scr descrittato 
 encryptscr.exe [--wks|-w] workstation [-x|--exec] -> !!!esegue workstation.scr locale!!!!
 ''');
+        exit(0);
       }
     },
   );
