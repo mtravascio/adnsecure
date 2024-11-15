@@ -4,6 +4,9 @@ import 'package:pointycastle/export.dart';
 import 'dart:typed_data';
 import 'private_key.dart';
 
+const ENC = 'vSSvPM';
+const SCR = '3AM@ive';
+
 /// Decodifica i byte della chiave privata in un oggetto RSAPrivateKey
 RSAPrivateKey decodePrivateKey() {
   final asn1Parser = asn1lib.ASN1Parser(Uint8List.fromList(privateKeyBytes));
@@ -25,25 +28,46 @@ String decrittografaRSA(String encryptedPassword, RSAPrivateKey chiavePrivata) {
   try {
     decrypted = encrypter.decrypt(Encrypted.from64(encryptedPassword));
   } catch (e) {
-    //print('Errore RSA!');
+    print('Errore RSA Decription!');
   }
   return decrypted;
 }
 
-/// Decrittografa una stringa crittografata in Base64 con AES
+// Decrittografa una stringa crittografata in Base64 con AES
+String decryptENC(String encryptedText, Key deckey) {
+  //print('chiave AES da key');
+  //final chiave =
+  //    Key.fromUtf8(key.padRight(32)); // Chiave a 256-bit (32 caratteri)
+  //final key = Key.fromUtf8(chiave.padRight(32)); //deve essere 256Bit per forza
+  //final iv = IV.fromSecureRandom(16);
+  //final iv = IV.fromLength(16);
+  final iv = IV.fromUtf8(ENC.padRight(16)); // IV a 128-bit
+
+  final encrypter = Encrypter(AES(deckey));
+  String decrypted = '';
+  try {
+    decrypted = encrypter.decrypt64(encryptedText, iv: iv);
+  } catch (e) {
+    print('Errore ENC Decryption!');
+  }
+  return decrypted; // Ritorna il testo decrittografato
+}
+
+// Decrittografa una stringa crittografata in Base64 con AES
 String decrittografaAES(String encryptedText, String chiave) {
   //final chiave =
   //    Key.fromUtf8(key.padRight(32)); // Chiave a 256-bit (32 caratteri)
   final key = Key.fromUtf8(chiave.padRight(32)); //deve essere 256Bit per forza
   //final iv = IV.fromSecureRandom(16);
-  final iv = IV.fromUtf8('3AveMaria'.padRight(16)); // IV a 128-bit
+  //final iv = IV.fromLength(16);
+  final iv = IV.fromUtf8(SCR.padRight(16)); // IV a 128-bit
 
   final encrypter = Encrypter(AES(key));
   String decrypted = '';
   try {
     decrypted = encrypter.decrypt64(encryptedText, iv: iv);
   } catch (e) {
-    //print('Errore AES!');
+    print('Errore SCR Decryption!');
   }
   return decrypted; // Ritorna il testo decrittografato
 }

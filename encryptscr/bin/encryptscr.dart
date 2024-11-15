@@ -30,7 +30,7 @@ void main(List<String> arguments) async {
     callback: (p0) {
       if (p0) {
         print('''
-* Script Encoder - v$ver *
+* Secure Script Encoder - v$ver *
 Massimo Travascio (mtravasciocisia@gmail.com) 
 Cisia Torino - 2024
 
@@ -169,6 +169,7 @@ encryptscr.exe [--wks|-w] workstation [-x|--exec] -> !!!esegue workstation.scr l
 
       final encKey = decData['k'];
       final encScript = decData['e'];
+      final scriptFile = decData['n'];
 
       //final encKey = File('key.txt').readAsStringSync();
       final AESKey = encryptscr.decrittografaRSA(encKey, privateKey);
@@ -200,7 +201,7 @@ encryptscr.exe [--wks|-w] workstation [-x|--exec] -> !!!esegue workstation.scr l
         interpreter = 'unknown!';
       }
 
-      print('Script ($interpreter) Checked!\n');
+      print('Script ($interpreter) $scriptFile Checked!\n');
 
       if (showscript) {
         print('Show Script ($interpreter):\n$script\n');
