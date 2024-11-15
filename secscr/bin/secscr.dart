@@ -9,11 +9,11 @@ import 'package:http/http.dart' as http;
 const ver = '1.2';
 const help = 'help';
 const fileopt = 'file';
-const show = 'show';
+//const show = 'show';
 const exec = 'exec';
 const urlopt = 'url';
 const force = 'force';
-bool showscript = false;
+//bool showscript = false;
 bool execscript = false;
 bool forcescript = false;
 String fileSCR = '';
@@ -50,7 +50,7 @@ secscr.exe [--f|--file] scriptname.scr [-u|--url] http://HOST:PORT/scriptname.sc
   parser.addOption(fileopt, mandatory: false, abbr: 'f');
   parser.addOption(urlopt, mandatory: false, abbr: 'u');
   parser.addFlag(exec, negatable: false, abbr: 'x');
-  parser.addFlag(show, negatable: false);
+  //parser.addFlag(show, negatable: false);
   parser.addFlag(force, negatable: false);
 
   ArgResults results;
@@ -60,7 +60,7 @@ secscr.exe [--f|--file] scriptname.scr [-u|--url] http://HOST:PORT/scriptname.sc
     fileSCR = results.option(fileopt) ?? '';
     urlSCR = results.option(urlopt) ?? '';
 // 'http://localhost:8080/${Platform.localHostname}.scr';
-    showscript = results.flag(show);
+    //showscript = results.flag(show);
     execscript = results.flag(exec);
     forcescript = results.flag(force);
   } catch (e) {
@@ -166,9 +166,11 @@ secscr.exe [--f|--file] scriptname.scr [-u|--url] http://HOST:PORT/scriptname.sc
 
       print('Script ($interpreter) $scriptFile Checked!\n');
 
+      /*
       if (showscript) {
         print('Script ($interpreter) decrittato:\n$script\n');
       }
+      */
       if (execscript) {
         print('Eseguo Script ($interpreter):\n');
         if (Platform.isLinux) {
