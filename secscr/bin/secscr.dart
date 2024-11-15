@@ -1,10 +1,10 @@
 import 'dart:convert';
-
 import 'package:encrypt/encrypt.dart';
 import 'package:secscr/secscr.dart' as secscr;
 //import 'package:secscr/winapi.dart';
 import 'dart:io';
 import 'package:args/args.dart';
+import 'package:http/http.dart' as http;
 
 const ver = '1.2';
 const help = 'help';
@@ -15,6 +15,7 @@ const urlopt = 'url';
 bool showscript = false;
 bool execscript = false;
 String fileSCR = '';
+String urlSCR = '';
 String interpreter = '';
 
 void main(List<String> arguments) async {
@@ -38,7 +39,7 @@ Massimo Travascio (massimo.travascio@giustizia.it)
 
 secscr.exe [-h|--help] oppure help genera questo help.
 
-secscr.exe [--f|--file] workstation.scr [--show|-s] | [--exec|-x] [-u|--url] http://localdomain:8080/workstation.scr
+secscr.exe [--f|--file] scriptname.scr [--show|-s] | [--exec|-x] [-u|--url] http://HOST:PORT/scriptname.scr
 ''');
         exit(0);
       }
@@ -53,7 +54,9 @@ secscr.exe [--f|--file] workstation.scr [--show|-s] | [--exec|-x] [-u|--url] htt
 
   try {
     results = parser.parse(arguments);
-    fileSCR = results.option(fileopt) ?? '${Platform.localHostname}.scr';
+    fileSCR = results.option(fileopt) ?? '';
+    urlSCR = results.option(urlopt) ?? '';
+// 'http://localhost:8080/${Platform.localHostname}.scr';
     showscript = results.flag(show);
     execscript = results.flag(exec);
   } catch (e) {
@@ -62,11 +65,32 @@ secscr.exe [--f|--file] workstation.scr [--show|-s] | [--exec|-x] [-u|--url] htt
   //-------------Decrypt Test--------------//
 
   String encryptedScript = '';
-  try {
-    encryptedScript = File('$fileSCR').readAsStringSync();
-  } catch (e) {
-    print('$fileSCR non trovato!\n');
-    exit(-1);
+  if (urlSCR.isEmpty) {
+    if (fileSCR.isEmpty) {
+      fileSCR = '${Platform.localHostname}.scr';
+    }
+    try {
+      encryptedScript = File(fileSCR).readAsStringSync();
+    } catch (e) {
+      print('$fileSCR non trovato!\n');
+      exit(-1);
+    }
+    //scarica da url il file scr
+  } else {
+    print('Download $urlSCR\n');
+
+    fileSCR = Uri.parse(urlSCR).pathSegments.last;
+
+    final response = await http.get(Uri.parse(urlSCR));
+
+    if (response.statusCode != 200) {
+      print('Errore nel download: ${response.statusCode}');
+      print('$fileSCR non trovato!\n');
+      exit(-1);
+    }
+    encryptedScript = response.body;
+
+    print('Downloaded $fileSCR:\n$encryptedScript\n');
   }
 
   String workStation = fileSCR.split('.').first;
