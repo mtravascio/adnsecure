@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:encrypt/encrypt.dart';
 import 'package:secscr/secscr.dart' as secscr;
-import 'package:secscr/winapi.dart';
+//import 'package:secscr/winapi.dart';
 import 'dart:io';
 import 'package:args/args.dart';
 
@@ -18,7 +18,7 @@ String fileSCR = '';
 String interpreter = '';
 
 void main(List<String> arguments) async {
-  if (Platform.isWindows) print('Computer Name: ${getComputerName()}\n');
+  //if (Platform.isWindows) print('Computer Name: ${getComputerName()}\n');
 
   print('hostname: ${Platform.localHostname}');
 
@@ -32,14 +32,15 @@ void main(List<String> arguments) async {
     callback: (p0) {
       if (p0) {
         print('''
-* Secure Script Cisia Torino v$ver' *
-Massimo Travascio (mtravasciocisia@gmail.com) 
-Cisia Torino - 2024
+* Secure Script Exec v$ver' *
+* Ministero della Giustizia - Cisia di Torino - 2024 *
+Massimo Travascio (massimo.travascio@giustizia.it) 
 
 secscr.exe [-h|--help] oppure help genera questo help.
 
-secscr.exe [--f|--file] workstation.scr [--show|-s] | [--exec|-x] [-u|--url] http://localdomain:8000/workstation.scr
+secscr.exe [--f|--file] workstation.scr [--show|-s] | [--exec|-x] [-u|--url] http://localdomain:8080/workstation.scr
 ''');
+        exit(0);
       }
     },
   );
@@ -52,7 +53,7 @@ secscr.exe [--f|--file] workstation.scr [--show|-s] | [--exec|-x] [-u|--url] htt
 
   try {
     results = parser.parse(arguments);
-    fileSCR = results.option(fileopt) ?? getComputerName();
+    fileSCR = results.option(fileopt) ?? '${Platform.localHostname}.scr';
     showscript = results.flag(show);
     execscript = results.flag(exec);
   } catch (e) {
