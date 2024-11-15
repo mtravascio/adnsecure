@@ -28,7 +28,7 @@ String decrittografaRSA(String encryptedPassword, RSAPrivateKey chiavePrivata) {
   try {
     decrypted = encrypter.decrypt(Encrypted.from64(encryptedPassword));
   } catch (e) {
-    print('Errore RSA Decription!');
+    //print('Errore RSA Decription!');
   }
   return decrypted;
 }
@@ -48,7 +48,7 @@ String decryptENC(String encryptedText, Key deckey) {
   try {
     decrypted = encrypter.decrypt64(encryptedText, iv: iv);
   } catch (e) {
-    print('Errore ENC Decryption!');
+    //print('Errore ENC Decryption!');
   }
   return decrypted; // Ritorna il testo decrittografato
 }
@@ -67,7 +67,7 @@ String decrittografaAES(String encryptedText, String chiave) {
   try {
     decrypted = encrypter.decrypt64(encryptedText, iv: iv);
   } catch (e) {
-    print('Errore SCR Decryption!');
+    //print('Errore SCR Decryption!');
   }
   return decrypted; // Ritorna il testo decrittografato
 }

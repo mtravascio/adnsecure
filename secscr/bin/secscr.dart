@@ -23,9 +23,9 @@ String interpreter = '';
 void main(List<String> arguments) async {
   //if (Platform.isWindows) print('Computer Name: ${getComputerName()}\n');
 
-  print('hostname: ${Platform.localHostname}');
+  //print('hostname: ${Platform.localHostname}');
 
-  print('Argomenti: $arguments \n');
+  print('Parametri: $arguments\n');
 
   final parser = ArgParser();
   parser.addFlag(
@@ -85,7 +85,13 @@ secscr.exe [--f|--file] scriptname.scr [--show|-s] | [--exec|-x] [-u|--url] http
 
     fileSCR = Uri.parse(urlSCR).pathSegments.last;
 
-    final response = await http.get(Uri.parse(urlSCR));
+    final response;
+    try {
+      response = await http.get(Uri.parse(urlSCR));
+    } catch (e) {
+      print("Errore di connessione!\n");
+      exit(-1);
+    }
 
     if (response.statusCode != 200) {
       print('Errore nel download: ${response.statusCode}');
@@ -111,7 +117,9 @@ secscr.exe [--f|--file] scriptname.scr [--show|-s] | [--exec|-x] [-u|--url] http
     // Decritta con chiave AES
     String scriptDecrittatoAES =
         secscr.decrittografaAES(encryptedScript, workStation);
-    print("Decoded Script: $scriptDecrittatoAES\n");
+
+    //Stampa lo script decodificato
+    //print("Decoded Script: $scriptDecrittatoAES\n");
 
     //var privateKey;
     try {
