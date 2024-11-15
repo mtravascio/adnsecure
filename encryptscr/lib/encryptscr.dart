@@ -5,6 +5,9 @@ import 'dart:typed_data';
 import 'public_key.dart';
 import 'private_key.dart';
 
+const ENC = 'vSSvPM';
+const SCR = '3AM@ive';
+
 /// Decodifica i byte della chiave pubblica in un oggetto RSAPublicKey
 RSAPublicKey decodePublicKey() {
   final asn1Parser = asn1lib.ASN1Parser(Uint8List.fromList(publicKeyBytes));
@@ -81,14 +84,14 @@ String cryptENC(String plainText, Key enckey) {
   //final key = Key.fromLength(32); //deve essere 256Bit per forza
   //final iv = IV.fromSecureRandom(16);
   //final iv = IV.fromLength(16);
-  final iv = IV.fromUtf8('3AveMaria'.padRight(16)); // IV a 128-bit
+  final iv = IV.fromUtf8(ENC.padRight(16)); // IV a 128-bit
 
   final encrypter = Encrypter(AES(enckey));
   var encrypted;
   try {
     encrypted = encrypter.encrypt(plainText, iv: iv);
   } catch (e) {
-    print('Errore AES Encryption!');
+    print('Errore ENC Encryption!');
   }
 
 //final decrypted = encrypter.decrypt(encrypted, iv: iv);
@@ -108,14 +111,14 @@ String crittografaAES(String plainText, String chiave) {
   //final key = Key.fromLength(32); //deve essere 256Bit per forza
   //final iv = IV.fromSecureRandom(16);
   //final iv = IV.fromLength(16);
-  final iv = IV.fromUtf8('3AveMaria'.padRight(16)); // IV a 128-bit
+  final iv = IV.fromUtf8(SCR.padRight(16)); // IV a 128-bit
 
   final encrypter = Encrypter(AES(key));
   var encrypted;
   try {
     encrypted = encrypter.encrypt(plainText, iv: iv);
   } catch (e) {
-    print('Errore AES Encryption!');
+    print('Errore SCR Encryption!');
   }
 
 //final decrypted = encrypter.decrypt(encrypted, iv: iv);
@@ -135,14 +138,14 @@ String decryptENC(String encryptedText, Key deckey) {
   //final key = Key.fromUtf8(chiave.padRight(32)); //deve essere 256Bit per forza
   //final iv = IV.fromSecureRandom(16);
   //final iv = IV.fromLength(16);
-  final iv = IV.fromUtf8('3AveMaria'.padRight(16)); // IV a 128-bit
+  final iv = IV.fromUtf8(ENC.padRight(16)); // IV a 128-bit
 
   final encrypter = Encrypter(AES(deckey));
   String decrypted = '';
   try {
     decrypted = encrypter.decrypt64(encryptedText, iv: iv);
   } catch (e) {
-    print('Errore AES Decryption!');
+    print('Errore ENC Decryption!');
   }
   return decrypted; // Ritorna il testo decrittografato
 }
@@ -154,14 +157,14 @@ String decrittografaAES(String encryptedText, String chiave) {
   final key = Key.fromUtf8(chiave.padRight(32)); //deve essere 256Bit per forza
   //final iv = IV.fromSecureRandom(16);
   //final iv = IV.fromLength(16);
-  final iv = IV.fromUtf8('3AveMaria'.padRight(16)); // IV a 128-bit
+  final iv = IV.fromUtf8(SCR.padRight(16)); // IV a 128-bit
 
   final encrypter = Encrypter(AES(key));
   String decrypted = '';
   try {
     decrypted = encrypter.decrypt64(encryptedText, iv: iv);
   } catch (e) {
-    print('Errore AES Decryption!');
+    print('Errore SCR Decryption!');
   }
   return decrypted; // Ritorna il testo decrittografato
 }

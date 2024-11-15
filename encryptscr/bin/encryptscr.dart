@@ -6,11 +6,11 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:encryptscr/winapi.dart';
 
-const ver = '1.1alfa';
+const ver = '1.2';
 const help = 'help';
 const wks = 'wks';
 const inputFile = 'file';
-const encodedFile = 'enc';
+const url = 'url';
 const show = 'show';
 const exec = 'exec';
 bool showscript = false;
@@ -30,36 +30,35 @@ void main(List<String> arguments) async {
     callback: (p0) {
       if (p0) {
         print('''
-* Script Encoder Cisia Torino v$ver *
+* Script Encoder - v$ver *
+Massimo Travascio (mtravasciocisia@gmail.com) 
+Cisia Torino - 2024
 
 encryptscr.exe [-h|--help] genera questo help.
 
-encryptscr.exe [--file|-f] 'script.ps1'|'script.sh'|'script.py'  -> genera 'script.enc'
-encryptscr.exe [--wks|-w] workstation [-e|--enc] 'script.enc' -> genera 'workstation.scr' da usare con secscr.exe 
-encryptscr.exe [--wks|-w] workstation [-f|--file] 'script.ps1' -> genera 'script.enc' e 'workstation.scr' 
-
-encryptscr.exe [--wks|-w] workstation -> verifica 'workstation.scr'
+encryptscr.exe [--wks|-w] workstation [--file|-f] 'script.ps1'|'script.sh'|'script.py'  -> genera 'workstation.scr' da usare con secscr.exe 
+encryptscr.exe [--wks|-w] workstation -> verifica il file 'workstation.scr'
 encryptscr.exe [--wks|-w] workstation [-s|--show] -> mostra workstation.scr descrittato 
 encryptscr.exe [--wks|-w] workstation [-x|--exec] -> !!!esegue workstation.scr locale!!!!
 ''');
       }
     },
   );
-  parser.addOption(wks, mandatory: false, abbr: 'w');
+  parser.addOption(wks, mandatory: true, abbr: 'w');
   parser.addOption(inputFile, mandatory: false, abbr: 'f');
-  parser.addOption(encodedFile, mandatory: true, abbr: 'e');
+  parser.addOption(url, mandatory: false, abbr: 'u');
   parser.addFlag(show, negatable: false, abbr: 's');
   parser.addFlag(exec, negatable: false, abbr: 'x');
 
   String scriptFile = '';
-  String scriptEnc = '';
+  String urlFile = '';
   String interpreter = '';
 
   ArgResults results;
   try {
     results = parser.parse(arguments);
     scriptFile = results.option(inputFile) ?? '';
-    scriptEnc = results.option(encodedFile) ?? '';
+    urlFile = results.option(url) ?? '';
     workStation = results.option(wks) ?? getComputerName();
     showscript = results.flag(show);
     execscript = results.flag(exec);
@@ -68,11 +67,11 @@ encryptscr.exe [--wks|-w] workstation [-x|--exec] -> !!!esegue workstation.scr l
     exitCode = -1;
   }
 
-  if (scriptFile.isNotEmpty) {
+  if (workStation.isNotEmpty && scriptFile.isNotEmpty) {
     try {
       String userScript = '';
 
-      scriptEnc = scriptFile.replaceAll(RegExp(r'\.[^.]+$'), '.enc');
+      //scriptEnc = scriptFile.replaceAll(RegExp(r'\.[^.]+$'), '.enc');
 
       //legge lo script
       try {
@@ -94,42 +93,55 @@ encryptscr.exe [--wks|-w] workstation [-x|--exec] -> !!!esegue workstation.scr l
       // Crittografa la chiave Random AES con RSA
       final encKey = encryptscr.crittografaRSA(randomAESKey.base64, publicKey);
 
-      print('\n$scriptEnc:\n$encScript\n');
+      print('\nEncoded $scriptFile:\n$encScript\n');
 
       print('RSA key.txt:\n$encKey\n');
 
-      File(scriptEnc).writeAsStringSync(encScript);
-      File('key.txt').writeAsStringSync(encKey);
+      final data = jsonEncode({'n': scriptFile, 'e': encScript, 'k': encKey});
+
+      //scrive il file script.enc
+      File('data.enc').writeAsStringSync(data);
+
+      //File(scriptEnc).writeAsStringSync(encScript);
+      //File('key.txt').writeAsStringSync(encKey);
+
+      if (data.isNotEmpty) {
+        // Crittografa il AES in workstation.scr
+        String scriptCrittato = encryptscr.crittografaAES(data, workStation);
+        File('$workStation.scr').writeAsStringSync(scriptCrittato);
+
+        print('\nEncoded $workStation.scr:\n$scriptCrittato\n');
+      }
     } catch (e) {
       print('Errore nella chiave di crittazione!\n');
       exit(-1);
     }
   }
-  if (workStation.isNotEmpty &&
-      //(scriptEnc.isNotEmpty || scriptFile.isNotEmpty)) {
-      scriptEnc.isNotEmpty) {
-    String encryptedRSAenc = '';
+  if (workStation.isNotEmpty) {
+    String encryptedSCR = '';
 
-    if (scriptEnc.isNotEmpty) {
-      try {
-        encryptedRSAenc = File(scriptEnc).readAsStringSync();
-      } catch (e) {
-        print('$scriptEnc File non trovato!\n');
+    try {
+      encryptedSCR = File('$workStation.scr').readAsStringSync();
+    } catch (e) {
+      print('File $workStation.scr non trovato!\n');
+      exit(-1);
+    }
+
+    if (encryptedSCR.isNotEmpty) {
+      // Verifica lo script AES
+      print('\nCheck $workStation.scr:\n');
+      final res = encryptscr.decrittografaAES(encryptedSCR, workStation);
+      if (res.isNotEmpty) {
+        print('OK!');
+      } else {
+        print('Error!');
         exit(-1);
       }
-    }
-    if (encryptedRSAenc.isNotEmpty) {
-      // Crittografa il AES los script
-      String scriptCrittato =
-          encryptscr.crittografaAES(encryptedRSAenc, workStation);
-      File('$workStation.scr').writeAsStringSync(scriptCrittato);
-
-      print('\nEncoded $workStation.scr:\n$scriptCrittato\n');
     }
   }
   //-------------Decrypt Test--------------//
   String encryptedScript = '';
-  if (workStation.isNotEmpty) {
+  if (workStation.isNotEmpty && (execscript || showscript)) {
     try {
       encryptedScript = File('$workStation.scr').readAsStringSync();
       print("\nRead $workStation.scr:\n$encryptedScript\n");
@@ -140,19 +152,30 @@ encryptscr.exe [--wks|-w] workstation [-x|--exec] -> !!!esegue workstation.scr l
   //print('inizia la decodifica\n');
   if (encryptedScript.isNotEmpty) {
     //print("File Crittato RSA+AES: $encryptedScript\n");
-    // Decritta con chiave AES
+    // Decritta il file json con chiave AES
     String scriptDecrittatoAES =
         encryptscr.decrittografaAES(encryptedScript, workStation);
-    print("\nDecoded Script (.enc):\n$scriptDecrittatoAES\n");
+    print("\nDecoded Script:\n$scriptDecrittatoAES\n");
 
     //var privateKey;
     try {
       var privateKey = encryptscr.decodePrivateKey();
       // Decrittografa la password
-      final encKey = File('key.txt').readAsStringSync();
+      // Legge il file enc in formato json
+      //final data = File('script.enc').readAsStringSync();
+      //final decData = jsonDecode(data);
+
+      final decData = jsonDecode(scriptDecrittatoAES);
+
+      final encKey = decData['k'];
+      final encScript = decData['e'];
+
+      //final encKey = File('key.txt').readAsStringSync();
       final AESKey = encryptscr.decrittografaRSA(encKey, privateKey);
+
       final randomKey = base64Decode(AESKey);
-      final script = encryptscr.decryptENC(scriptDecrittatoAES, Key(randomKey));
+      //final script = encryptscr.decryptENC(scriptDecrittatoAES, Key(randomKey));
+      final script = encryptscr.decryptENC(encScript, Key(randomKey));
 
       var lines = script.split('\n');
 
