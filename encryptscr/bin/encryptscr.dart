@@ -6,15 +6,17 @@ import 'package:args/args.dart';
 //import 'package:encryptscr/winapi.dart';
 import 'package:http/http.dart' as http;
 
-const ver = '1.3';
+const ver = '1.4';
 const help = 'help';
 const wks = 'wks';
 const inputFile = 'file';
 const urlopt = 'url';
 const show = 'show';
 const exec = 'exec';
+const runas = 'runas';
 bool showscript = false;
 bool execscript = false;
+bool runascript = false;
 String workStation = '';
 String urlSCR = '';
 
@@ -41,7 +43,7 @@ encryptscr.exe [--wks|-w] workstation [--file|-f] 'script.ps1'|'script.sh'|'scri
 encryptscr.exe [--wks|-w] workstation -> verifica il file 'workstation.scr'
 encryptscr.exe [--url|-u] http://HOST:PORT/workstation -> verifica la presenza di 'workstation.scr' url remota
 encryptscr.exe [--wks|-w] workstation [-s|--show] -> mostra workstation.scr descrittato 
-encryptscr.exe [--wks|-w] workstation [-x|--exec] -> !!!esegue workstation.scr locale!!!!
+encryptscr.exe [--wks|-w] workstation [-x|--exec] [--runas] -> !!!esegue workstation.scr locale!!!! (runas chiede l'utente con il quale eseguirlo)
 ''');
         exit(0);
       }
@@ -52,6 +54,7 @@ encryptscr.exe [--wks|-w] workstation [-x|--exec] -> !!!esegue workstation.scr l
   parser.addOption(urlopt, mandatory: false, abbr: 'u');
   parser.addFlag(show, negatable: false, abbr: 's');
   parser.addFlag(exec, negatable: false, abbr: 'x');
+  parser.addFlag(runas, negatable: false);
 
   String scriptFile = '';
   String interpreter = '';
@@ -64,6 +67,7 @@ encryptscr.exe [--wks|-w] workstation [-x|--exec] -> !!!esegue workstation.scr l
     workStation = results.option(wks) ?? '';
     showscript = results.flag(show);
     execscript = results.flag(exec);
+    runascript = results.flag(runas);
   } catch (e) {
     print('encryptscr.exe [-h|--help] per help\n');
     exitCode = -1;
@@ -237,20 +241,37 @@ encryptscr.exe [--wks|-w] workstation [-x|--exec] -> !!!esegue workstation.scr l
         print('Execute Script ($interpreter):\n');
         if (Platform.isLinux) {
           var result = await Process.run('bash', ['-c', script]);
+          print('Exit code: ${result.exitCode}');
           print('Output:\n${result.stdout}\n');
           print('Error:\n${result.stderr}\n');
         }
         //runInShell: false perp poter visualizzare i messaggi di output e di errore!
         //in secscr potrebbe essere true!
         if (Platform.isWindows) {
-          var result = await Process.run('powershell.exe', ['-Command', script],
-              runInShell: false);
+          var result;
+          if (runascript) {
+            // Esegue i comandi chiedendo i privilegi di esecuzione (RunAs) // da inserire con opzione
+            result = await Process.run(
+                'powershell.exe',
+                [
+                  '-Command',
+                  'Start-Process powershell -ArgumentList \'-Command "$script"\' -Verb RunAs'
+                ],
+                runInShell: false);
+          } else {
+            //Esegue i comandi script con l'utente corrente
+            result = await Process.run('powershell.exe', ['-Command', script],
+                runInShell: false);
+          }
+
+          print('Exit code: ${result.exitCode}');
           print('Output:\n${result.stdout}\n');
           print('Error:\n${result.stderr}\n');
         }
 
         if (Platform.isMacOS) {
           var result = await Process.run('bash', ['-c', script]);
+          print('Exit code: ${result.exitCode}');
           print('Output:\n${result.stdout}\n');
           print('Error:\n${result.stderr}\n');
         }
