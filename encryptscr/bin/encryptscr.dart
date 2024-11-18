@@ -240,7 +240,16 @@ encryptscr.exe [--wks|-w] workstation [-x|--exec] [--runas] -> !!!esegue worksta
       if (execscript) {
         print('Execute Script ($interpreter):\n');
         if (Platform.isLinux) {
-          var result = await Process.run('bash', ['-c', script]);
+          var result;
+          if (runascript) {
+            // Comando da eseguire con privilegi sudo
+            result =
+                await Process.run('bash', ['-c', 'sudo bash -c "$script"']);
+          } else {
+            // Comando bash normale
+            result = await Process.run('bash', ['-c', script]);
+          }
+
           print('Exit code: ${result.exitCode}');
           print('Output:\n${result.stdout}\n');
           print('Error:\n${result.stderr}\n');
@@ -270,7 +279,15 @@ encryptscr.exe [--wks|-w] workstation [-x|--exec] [--runas] -> !!!esegue worksta
         }
 
         if (Platform.isMacOS) {
-          var result = await Process.run('bash', ['-c', script]);
+          var result;
+          if (runascript) {
+            // Comando da eseguire con privilegi sudo
+            result =
+                await Process.run('bash', ['-c', 'sudo bash -c "$script"']);
+          } else {
+            // Comando bash normale
+            result = await Process.run('bash', ['-c', script]);
+          }
           print('Exit code: ${result.exitCode}');
           print('Output:\n${result.stdout}\n');
           print('Error:\n${result.stderr}\n');
