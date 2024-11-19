@@ -6,16 +6,18 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:http/http.dart' as http;
 
-const ver = '1.3';
+const ver = '1.4';
 const help = 'help';
 const fileopt = 'file';
 //const show = 'show';
 const exec = 'exec';
 const urlopt = 'url';
 const force = 'force';
+const runas = 'runas';
 //bool showscript = false;
 bool execscript = false;
 bool forcescript = false;
+bool runascript = false;
 String fileSCR = '';
 String urlSCR = '';
 String interpreter = '';
@@ -41,7 +43,7 @@ Massimo Travascio (massimo.travascio@giustizia.it)
 
 secscr.exe [-h|--help] oppure help genera questo help.
 
-secscr.exe [--f|--file] scriptname.scr [-u|--url] http://HOST:PORT/scriptname.scr [--exec|-x]
+secscr.exe [--f|--file] scriptname.scr [-u|--url] http://HOST:PORT/scriptname.scr [--exec|-x] [--runas]
 ''');
         exit(0);
       }
@@ -52,7 +54,7 @@ secscr.exe [--f|--file] scriptname.scr [-u|--url] http://HOST:PORT/scriptname.sc
   parser.addFlag(exec, negatable: false, abbr: 'x');
   //parser.addFlag(show, negatable: false);
   parser.addFlag(force, negatable: false);
-
+  parser.addFlag(runas, negatable: false);
   ArgResults results;
 
   try {
@@ -63,6 +65,7 @@ secscr.exe [--f|--file] scriptname.scr [-u|--url] http://HOST:PORT/scriptname.sc
     //showscript = results.flag(show);
     execscript = results.flag(exec);
     forcescript = results.flag(force);
+    runascript = results.flag(runas);
   } catch (e) {
     print('parametro sconosciuto! [-h|--help] per help\n');
   }
@@ -174,20 +177,53 @@ secscr.exe [--f|--file] scriptname.scr [-u|--url] http://HOST:PORT/scriptname.sc
       if (execscript) {
         print('Eseguo Script ($interpreter):\n');
         if (Platform.isLinux) {
-          var result = await Process.run('bash', ['-c', script]);
+          var result;
+          if (runascript) {
+            // Comando da eseguire con privilegi sudo
+            result =
+                await Process.run('bash', ['-c', 'sudo bash -c "$script"']);
+          } else {
+            // Comando bash normale
+            result = await Process.run('bash', ['-c', script]);
+          }
+
+          print('Exit code: ${result.exitCode}');
           print('Output:\n${result.stdout}\n');
           print('Error:\n${result.stderr}\n');
         }
-
         if (Platform.isWindows) {
-          var result = await Process.run('powershell.exe', ['-Command', script],
-              runInShell: false);
+          var result;
+          if (runascript) {
+            // Esegue i comandi chiedendo i privilegi di esecuzione (RunAs) // da inserire con opzione
+            result = await Process.run(
+                'powershell.exe',
+                [
+                  '-Command',
+                  'Start-Process powershell -ArgumentList \'-Command "$script"\' -Verb RunAs'
+                ],
+                runInShell: false);
+          } else {
+            //Esegue i comandi script con l'utente corrente
+            result = await Process.run('powershell.exe', ['-Command', script],
+                runInShell: false);
+          }
+
+          print('Exit code: ${result.exitCode}');
           print('Output:\n${result.stdout}\n');
           print('Error:\n${result.stderr}\n');
         }
 
         if (Platform.isMacOS) {
-          var result = await Process.run('bash', ['-c', script]);
+          var result;
+          if (runascript) {
+            // Comando da eseguire con privilegi sudo
+            result =
+                await Process.run('bash', ['-c', 'sudo bash -c "$script"']);
+          } else {
+            // Comando bash normale
+            result = await Process.run('bash', ['-c', script]);
+          }
+          print('Exit code: ${result.exitCode}');
           print('Output:\n${result.stdout}\n');
           print('Error:\n${result.stderr}\n');
         }
@@ -196,7 +232,7 @@ secscr.exe [--f|--file] scriptname.scr [-u|--url] http://HOST:PORT/scriptname.sc
         exit(0);
       }
     } catch (e) {
-      print('Errore nella decrittazione!\n');
+      print('Errore di decrittazione!\n');
       exit(-1);
     }
   }
