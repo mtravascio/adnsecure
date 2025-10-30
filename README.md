@@ -1,3 +1,104 @@
+# ADNSecure: Utility Suite for Secure Script Execution
+
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Version](https://img.shields.io/github/v/release/mtravascio/adnsecure)](https://github.com/mtravascio/adnsecure/releases/latest)
+[![Platforms](https://img.shields.io/badge/platforms-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)](https://github.com/mtravascio/adnsecure/releases/latest)
+
+**ADNSecure** is a collection of command-line utilities written in Dart, designed for the secure management and execution of administrative scripts (PowerShell, Bash) across multiple operating systems.
+The core of the project is an encryption mechanism that binds scripts to specific workstations, preventing their execution on unauthorized machines.
+
+The project was developed by **Massimo Travascio** for the Ministry of Justice – Cisia of Turin (2024).
+
+## Core Concept: Encrypt & Execute
+
+The ADNSecure workflow is based on a two-phase model:
+
+1. **Encryption (`encryptscr`)**: A script (e.g., `script.ps1` or `script.sh`) is encrypted for a specific target workstation. The output is a `.scr` file that can only be executed on that machine.
+2. **Execution (`secscr`)**: The `secscr` utility runs on the target workstation to decrypt and securely execute the script. The script can be loaded from a local file or downloaded from a remote URL.
+
+This approach ensures that even if a `.scr` file is intercepted, it cannot be decrypted or executed on a computer other than the one it was created for.
+
+## Suite Components
+
+ADNSecure is a monorepo containing several specialized utilities:
+
+| Utility             | Description                                                                                                                            |
+| :------------------ | :------------------------------------------------------------------------------------------------------------------------------------- |
+| **`encryptscr`**    | **Secure Script Encoder**: Encrypts PowerShell or Bash scripts for a specific workstation, generating a `.scr` file.                   |
+| **`secscr`**        | **Secure Script Executor**: Decrypts and executes a `.scr` file on the target workstation, with support for remote execution via HTTP. |
+| **`securejoin`**    | Utility for securely managing the process of joining an Active Directory domain, using double-encrypted credentials.                   |
+| **`encryptjoin`**   | Encrypts credentials for `securejoin` using a dual encryption mechanism (AES-256 + RSA-2048).                                          |
+| **`rsakey2dart`**   | Converts RSA keys into Dart array format for embedding into executables.                                                               |
+| **`netjoindomain`** | A low-level implementation for joining Windows domains through direct Win32 API calls.                                                 |
+
+## Security Architecture
+
+System security is built on two key pillars:
+
+* **Strong Encryption**: A combination of industry-standard cryptographic algorithms is used.
+
+  * **RSA (2048-bit)**: For asymmetric key encryption.
+  * **AES (256-bit)**: For symmetric encryption of script content.
+* **Workstation Binding**: Each encrypted script is irrevocably bound to the computer name (on Windows) or hostname (on Linux/macOS) of the target machine. This binding prevents unauthorized execution on other systems.
+
+## Usage
+
+The utilities are designed to be used from the command line. Below are some basic examples.
+
+### Encrypting a Script
+
+To encrypt the file `deploy.ps1` for a machine named `PC-OFFICE`:
+
+```bash
+encryptscr.exe --wks PC-OFFICE --file deploy.ps1
+```
+
+This command will generate a file called `PC-OFFICE.scr`.
+
+### Executing an Encrypted Script
+
+To execute the file `PC-OFFICE.scr` on the target machine:
+
+```bash
+secscr.exe --file PC-OFFICE.scr --exec
+```
+
+To execute it with administrative privileges:
+
+```bash
+secscr.exe --file PC-OFFICE.scr --exec --runas
+```
+
+### Executing a Script from a URL
+
+```bash
+secscr.exe --url http://server/scripts/PC-OFFICE.scr --exec
+```
+
+## Installation
+
+Precompiled executables for Windows, Linux, and macOS are available on the repository’s [**Releases**](https://github.com/mtravascio/adnsecure/releases) page.
+
+## Key Dependencies
+
+The project relies on well-established Dart libraries for cryptography and system management:
+
+* **[encrypt](https://pub.dev/packages/encrypt)** and **[pointycastle](https://pub.dev/packages/pointycastle)**: For cryptographic functionality (AES, RSA).
+* **[args](https://pub.dev/packages/args)**: For command-line argument parsing.
+* **[win32](https://pub.dev/packages/win32)**: For interacting with native Windows APIs.
+* **[http](https://pub.dev/packages/http)**: For downloading scripts from remote URLs.
+
+## Contributing
+
+Contributions are welcome. Feel free to open an issue to report bugs or suggest new features.
+If you wish to contribute code, fork the repository and submit a pull request.
+
+## License
+
+This project is released under the [MIT License](https://opensource.org/licenses/MIT).
+
+---
+
 # ADNSecure: Suite di Utility per l'Esecuzione Sicura di Script
 
 [![Licenza](https://img.shields.io/badge/licenza-MIT-blue.svg)](https://opensource.org/licenses/MIT)
