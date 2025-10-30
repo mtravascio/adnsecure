@@ -1,3 +1,5 @@
+[🇮🇹 Italian version below](#versione-italiana)
+
 # ADNSecure: Utility Suite for Secure Script Execution
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
@@ -98,6 +100,8 @@ If you wish to contribute code, fork the repository and submit a pull request.
 This project is released under the [MIT License](https://opensource.org/licenses/MIT).
 
 ---
+
+# Versione Italiana
 
 # ADNSecure: Suite di Utility per l'Esecuzione Sicura di Script
 
